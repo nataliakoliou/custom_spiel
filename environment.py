@@ -1,3 +1,6 @@
+import random
+from collections import defaultdict
+
 class Cell:
     def __init__(self, row, col):
         self.row = row
@@ -6,22 +9,48 @@ class Cell:
         self.neighbors = []
 
 class Grid:
-    def __init__(self, rows=7, columns=6):
+    def __init__(self, rows=7, columns=6, merge=0.2):
         self.rows = rows
         self.columns = columns
+        self.merge = merge
         self.grid = [[Cell(i, j) for j in range(columns)] for i in range(rows)]
         self.initialize()
 
-    def is_valid(self, row, col):
-        return 0 <= row < self.rows and 0 <= col < self.columns
-
     def initialize(self):
+        counter = 0
         for i in range(self.rows):
             for j in range(self.columns):
                 cell = self.grid[i][j]
-                cell.row, cell.col, cell.id = i, j, i * self.columns + j
                 cell.neighbors = [self.grid[i + dr][j + dc] for dr, dc in [(0, -1), (0, 1), (-1, 0), (1, 0)]
                                   if self.is_valid(i + dr, j + dc)]
+                counter = self.assign_id(cell, counter)
+        self.update_neighbors()
+
+    def is_valid(self, row, col):
+        return 0 <= row < self.rows and 0 <= col < self.columns
+    
+    def assign_id(self, cell, counter):
+        neighbors = [neighbor.id for neighbor in cell.neighbors if neighbor.id is not None]
+        if random.random() < self.merge and neighbors:
+            cell.id = random.choice(neighbors)
+        else:
+            cell.id = counter
+            counter += 1
+        return counter
+
+    def update_neighbors(self):
+        idsXcells = defaultdict(list)
+        for row in self.grid:
+            for cell in row:
+                idsXcells[cell.id].append(cell)
+        for id, cells in idsXcells.items():
+            common_neighbors = []
+            for cell in cells:
+                for neighbor in cell.neighbors:
+                    if neighbor.id != id and neighbor not in common_neighbors:
+                        common_neighbors.append(neighbor)
+            for cell in cells:
+                cell.neighbors = list(set(common_neighbors))
 
     def display_grid(self):
         for row in self.grid:
