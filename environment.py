@@ -2,17 +2,20 @@ import random
 from collections import defaultdict
 
 class Cell:
-    def __init__(self, row, col):
+    def __init__(self, row, column):
         self.row = row
-        self.col = col
+        self.column = column
         self.id = None
+        self.colour = "white"  # white indicates that it's not coloured yet
+        self.hidden = False
         self.neighbors = []
 
 class Grid:
-    def __init__(self, rows=7, columns=6, merge=0.2):
+    def __init__(self, rows=7, columns=6, merge=0.1, hide=0.2):
         self.rows = rows
         self.columns = columns
         self.merge = merge
+        self.hide = hide
         self.grid = [[Cell(i, j) for j in range(columns)] for i in range(rows)]
         self.initialize()
 
@@ -25,9 +28,16 @@ class Grid:
                                   if self.is_valid(i + dr, j + dc)]
                 counter = self.assign_id(cell, counter)
         self.update_neighbors()
+        self.hide_cells()
 
-    def is_valid(self, row, col):
-        return 0 <= row < self.rows and 0 <= col < self.columns
+    def hide_cells(self):
+        for row in self.grid:
+            for cell in row:
+                if random.random() < self.hide:
+                    cell.hidden = True
+
+    def is_valid(self, row, column):
+        return 0 <= row < self.rows and 0 <= column < self.columns
     
     def assign_id(self, cell, counter):
         neighbors = [neighbor.id for neighbor in cell.neighbors if neighbor.id is not None]
@@ -58,4 +68,10 @@ class Grid:
 
     def display_neighbors(self, row, column):
         cell = self.grid[row][column]
-        print(f"Neighbors of cell {cell.id}: {','.join(str(neighbor.id) for neighbor in cell.neighbors)}.")
+        print(f"Neighbors of cell ({cell.row}, {cell.column}) with id {cell.id}: {','.join(str(neighbor.id) for neighbor in cell.neighbors)}.")
+
+    def display_hidden_cells(self):
+        for row in self.grid:
+            for cell in row:
+                if cell.hidden:
+                    print(f"Cell at ({cell.row}, {cell.column}) is hidden with ID: {cell.id}")
