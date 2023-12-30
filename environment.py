@@ -1,4 +1,6 @@
 import random
+from settings import *
+from player import *
 from collections import defaultdict
 
 class Cell:
@@ -6,17 +8,18 @@ class Cell:
         self.row = row
         self.column = column
         self.id = None
-        self.colour = "white"  # white indicates that it's not coloured yet
+        self.colour = WHITE  # white indicates that it's not coloured yet
         self.hidden = False
         self.neighbors = []
 
 class Grid:
-    def __init__(self, rows=7, columns=6, merge=0.1, hide=0.2):
-        self.rows = rows
-        self.columns = columns
-        self.merge = merge
-        self.hide = hide
-        self.grid = [[Cell(i, j) for j in range(columns)] for i in range(rows)]
+    def __init__(self):
+        self.rows = ROWS
+        self.columns = COLUMNS
+        self.merge = MERGE
+        self.hide = HIDE
+        self.grid = [[Cell(i, j) for j in range(self.columns)] for i in range(self.rows)]
+        self.playing = False
         self.initialize()
 
     def initialize(self):
@@ -62,6 +65,7 @@ class Grid:
             for cell in cells:
                 cell.neighbors = list(set(common_neighbors))
 
+####################################################################################################################
     def display_grid(self):
         for row in self.grid:
             print('\t'.join(str(cell.id) for cell in row))

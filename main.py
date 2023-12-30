@@ -1,26 +1,31 @@
 from environment import *
-from visualize import *
+from settings import *
+from simulator import *
 
-grid = Grid(rows=7, columns=6, merge=0.1, hide=0.2)
+grid = Grid()
 
-visualizer = Visualizer(grid, title="GAME:  Cooperative Graph Colouring Problem")
+# EXPLORE + EXPLOIT (QLEARNING) ##########################################################################
 
-# display grid where cells=ids in terminal
+# SIMULATE ###############################################################################################
+game = Game(grid)
+grid.playing = True
+#TODO: game.show_start_screen()
+game.new()
+game.run()
+#TODO: game.show_go_screen()
+
+# EVALUATE ###############################################################################################
+
+# HELP ###################################################################################################
 """
 grid.display_grid()
-"""
 
-# display the neighbors of some cells
-"""
 grid.display_neighbors(0,0)
 grid.display_neighbors(0,1)
 grid.display_neighbors(0,2)
 grid.display_neighbors(0,3)
 grid.display_neighbors(0,4)
 grid.display_neighbors(0,5)
-"""
 
-# display all the hidden cells
-"""
 grid.display_hidden_cells()
 """
