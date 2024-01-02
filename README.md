@@ -48,3 +48,34 @@ CGCP is a strategic game where q-learning agents, either human or robot, collabo
 - Additional reward (-x) added to total payoff as the average of certain factors.
 - Each factor is assigned a value between 0 and 1 for both human and robot agents (e.g. h and r).
 - Values are summed for each factor and processed to obtain the additional reward (-x): f(h,r) = -EXP(SUM(h,r)) = -x.
+
+## Q-Tables (used in training) vs Payoff Tables (used in α-rank)
+**Q-Table Key:** agent ~ [(cell0, col), (cell1, col), (cell2, col), …]
+- where agent is either human or robot.
+- where col can be either a color or None.
+- the value of this key indicates how good this solution proposed by the agent is.
+- this corresponds to a strategy of an agent, e.g., M.
+
+**Payoff Table Key:** {human, robot} ~ {[(cell0, col), (cell1, col), (cell2, col), …], [(cell0, col), (cell1, col), (cell2, col), …]}
+- where col can be either a color or None.
+- the value of this key indicates how good this solution collectively proposed by both agents is.
+- this corresponds to a combination of strategies of the agents, e.g., (M, N).
+- the payoff value of that combination (M, N) is defined by the q-values of the two agents: {q_human(M), q_robot(N)}.
+
+---
+## NOTES:
+1) Q-Learning: Ως state θεωρούμε κάθε διαφορετικό cell. Ως action ορίζουμε την επιλογή color στο εκάστοτε state. Άρα πρόκειται για 1-state αλγόριθμο με Q(s,a) = Q(cell, color). Υπάρχουν συνολικά num_cells * num_colors actions --μικρός αριθμός τουτέστιν 25*5=125.
+2) Σε κάθε round (exploration & exploitation) το περιβάλλον αναθέτει ένα cell randomly σε έναν από τους δύο players.
+3) Στο exploration η επιλογή action γίνεται randomly μεταξύ των διαθέσιμων actions, ενώ στο exploitation επιλέγεται το maximum Q(cell, color) δεδομένου του cell (state).
+4) Στο τέλος κάθε round προκύπτει μια λύση (καλή ή κακή) που αντιστοιχεί σε ένα profile [(ag, cell, col), (ag, cell, col), ... (ag, cell, col)].
+5) Αν θέλω να προσθέσω μια λύση στο payoff_tables χρειάζεται να υπολογίσω το payoff value της: P = [w * Q_ag(cell, col) + w * Q_ag(cell, col) + ... + w * Q_ag(cell, col)] / num_cells.
+6) Το evaluation γίνεται με 1 population. Άρα το payoff_tables περιλαμβάνει num_populations = 1 table διαστάσεων num_profiles x num_profiles. Οι τιμές σε κάθε row είναι όλες ίσες με το P του τρέχοντος profile. Εφόσον ο στόχος είναι να κάνουμε rank διάφορες λύσεις μεταξύ τους, πρέπει αυτές να διατηρούν ένα σταθερό P value across all columns, που υποδηλώνει το πόσο υπερτερούν ή υστερούν έναντι όλων των άλλων λύσεων.
+
+---
+## TODOs:
+
+1) Φτιάχνω το player.py, ορίζω super class Agent με subclasses Human και Robot.
+2) Υλοποιώ ενδεικτικά 10 stages, με τους πράκτορες να παίζουν randomly.
+3) Μελετώ το qlearning.py του open_spiel.
+4) Αν δεν προσαρμόζεται στον κώδικα, ορίζω δικό μου qlearning.
+5) Ολοκληρώνω με το evaluation κομμάτι: προσθέτω τον κώδικα στο fork και τρέχω τον α-rank (στο vm).

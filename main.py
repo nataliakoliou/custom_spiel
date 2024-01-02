@@ -1,20 +1,25 @@
-from environment import *
+from game import *
 from settings import *
 from simulator import *
 
-grid = Grid()
+game = Game.load()
+# grid = Grid()
 
 # EXPLORE + EXPLOIT (QLEARNING) ##########################################################################
 
 # SIMULATE ###############################################################################################
+"""
+grid = Grid()
 game = Game(grid)
 grid.playing = True
 #TODO: game.show_start_screen()
 game.new()
 game.run()
 #TODO: game.show_go_screen()
+"""
 
 # EVALUATE ###############################################################################################
+payoff_tables = get
 
 # HELP ###################################################################################################
 """

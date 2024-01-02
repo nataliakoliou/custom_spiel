@@ -1,7 +1,12 @@
 import random
 from settings import *
-from player import *
 from collections import defaultdict
+
+class Game:
+    def __init__(self):
+        self.grid = Grid()
+        self.human_agent = Human()
+        self.robot_agent = Robot()
 
 class Cell:
     def __init__(self, row, column):
@@ -79,3 +84,18 @@ class Grid:
             for cell in row:
                 if cell.hidden:
                     print(f"Cell at ({cell.row}, {cell.column}) is hidden with ID: {cell.id}")
+
+class Player:
+    def __init__(self, type):
+        self.type = type
+
+    def update_qtable(self, state, action, reward, next_state):
+        ...
+
+class Human(Player):
+    def __init__(self):
+        super().__init__('human')
+
+class Robot(Player):
+    def __init__(self):
+        super().__init__('robot')
