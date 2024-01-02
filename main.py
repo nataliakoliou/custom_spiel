@@ -2,8 +2,7 @@ from game import *
 from settings import *
 from simulator import *
 
-game = Game.load()
-# grid = Grid()
+game = Game()
 
 # EXPLORE + EXPLOIT (QLEARNING) ##########################################################################
 
