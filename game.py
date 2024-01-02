@@ -5,8 +5,17 @@ from collections import defaultdict
 class Game:
     def __init__(self):
         self.grid = Grid()
-        self.human_agent = Human()
-        self.robot_agent = Robot()
+        self.human = Human()
+        self.robot = Robot()
+        self.meta = MetaGame()
+
+class MetaGame(Game):
+    def __init__(self):
+        super().__init__()
+
+    def get_utilities(self):
+        utilities = None
+        return utilities
 
 class Cell:
     def __init__(self, row, column):
@@ -70,7 +79,6 @@ class Grid:
             for cell in cells:
                 cell.neighbors = list(set(common_neighbors))
 
-####################################################################################################################
     def display_grid(self):
         for row in self.grid:
             print('\t'.join(str(cell.id) for cell in row))
