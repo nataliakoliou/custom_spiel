@@ -1,17 +1,31 @@
 import random
 from itertools import *
 from settings import *
+from utils import *
 from collections import defaultdict
 
 class Game:
     def __init__(self):
-        self.grid = Grid()
+        self.env = Grid()
+        self.colors = []
         #self.human = Human()
         #self.robot = Robot()
         #self.meta = MetaGame()
 
     def run(self):
-        print("running")
+        self.env.initialize()
+        self.define_colors()
+
+        self.env.display()
+        self.env.grid[0][0].get_neighbors()
+        self.env.get_hidden_cells()
+        print(self.colors)
+    
+    def define_colors(self):
+        max_neighbors = get_max(len(cell.neighbors) for cell in chain.from_iterable(self.env.grid))
+        num_colors = max_neighbors + 1
+        print(num_colors)
+        self.colors = COLORS[:num_colors]
 
 """ class MetaGame(Game):
     def __init__(self):
@@ -82,6 +96,11 @@ class Grid:
 
     def is_valid(self, row, col):
         return 0 <= row < self.rows and 0 <= col < self.cols
+    
+    def define_colors(self):
+        max_neighbors = get_max(len(cell.neighbors) for cell in chain.from_iterable(self.grid))
+        num_colors = max_neighbors + 1
+        self.colors = COLORS[:num_colors]
     
     def display(self):
         for row in self.grid:

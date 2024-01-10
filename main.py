@@ -4,14 +4,7 @@ from settings import *
 
 # SETUP ##################################################################################################
 game = Game()
-
-grid = Grid()
-grid.initialize()
-
-""" print(grid.total)
-grid.display()
-grid.grid[0][0].get_neighbors()
-grid.get_hidden_cells() """
+game.run()
 
 # EXPLORE + EXPLOIT (QLEARNING) ##########################################################################
 #game.run()
