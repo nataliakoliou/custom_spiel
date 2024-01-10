@@ -1,99 +1,98 @@
 import random
+from itertools import *
 from settings import *
 from collections import defaultdict
 
 class Game:
     def __init__(self):
         self.grid = Grid()
-        self.human = Human()
-        self.robot = Robot()
-        self.meta = MetaGame()
+        #self.human = Human()
+        #self.robot = Robot()
+        #self.meta = MetaGame()
 
-class MetaGame(Game):
+    def run(self):
+        print("running")
+
+""" class MetaGame(Game):
     def __init__(self):
         super().__init__()
 
     def get_utilities(self):
         utilities = None
-        return utilities
+        return utilities """
 
 class Cell:
-    def __init__(self, row, column):
+    def __init__(self, row, col):
         self.row = row
-        self.column = column
+        self.col = col
         self.id = None
         self.colour = WHITE  # white indicates that it's not coloured yet
         self.hidden = False
         self.neighbors = []
 
+    def get_neighbors(self):
+        print(f"Neighbors of cell ({self.row}, {self.col}) with id {self.id}: {','.join(str(neighbor.id) for neighbor in self.neighbors)}.")
+
 class Grid:
     def __init__(self):
         self.rows = ROWS
-        self.columns = COLUMNS
+        self.cols = COLUMNS
         self.merge = MERGE
         self.hide = HIDE
-        self.grid = [[Cell(i, j) for j in range(self.columns)] for i in range(self.rows)]
+        self.grid = [[Cell(i, j) for j in range(self.cols)] for i in range(self.rows)]
+        self.blocks = defaultdict(list)
+        self.total = -1
         self.playing = False
-        self.initialize()
 
     def initialize(self):
-        counter = 0
-        for i in range(self.rows):
-            for j in range(self.columns):
-                cell = self.grid[i][j]
-                cell.neighbors = [self.grid[i + dr][j + dc] for dr, dc in [(0, -1), (0, 1), (-1, 0), (1, 0)]
-                                  if self.is_valid(i + dr, j + dc)]
-                counter = self.assign_id(cell, counter)
-        self.update_neighbors()
+        self.set_ids()
+        self.set_blocks()
+        self.set_neighbors()
         self.hide_cells()
 
+    def set_ids(self):
+        for i, j in product(range(self.rows), range(self.cols)):
+            cell = self.grid[i][j]
+            cell.neighbors = [self.grid[i + dr][j + dc] for dr, dc in [(0, -1), (0, 1), (-1, 0), (1, 0)]
+                                    if self.is_valid(i + dr, j + dc)]
+            ids = [neighbor.id for neighbor in cell.neighbors if neighbor.id is not None]
+            if random.random() < self.merge and ids:
+                cell.id = random.choice(ids)
+            else:
+                self.total += 1
+                cell.id = self.total
+
+    def set_blocks(self):
+        for cell in chain.from_iterable(self.grid):
+            self.blocks[cell.id].append(cell)
+
+    def set_neighbors(self):
+        for id, cells in self.blocks.items():
+            shared = set()
+            for cell in cells:
+                shared |= {neighbor for neighbor in cell.neighbors if neighbor.id != id}
+            for cell in cells:
+                cell.neighbors = list(shared)
+
     def hide_cells(self):
-        for row in self.grid:
-            for cell in row:
-                if random.random() < self.hide:
-                    cell.hidden = True
+        for cells in self.blocks.values():
+            if random.random() < self.hide:
+                for c in cells:
+                    c.hidden = True
 
-    def is_valid(self, row, column):
-        return 0 <= row < self.rows and 0 <= column < self.columns
+    def is_valid(self, row, col):
+        return 0 <= row < self.rows and 0 <= col < self.cols
     
-    def assign_id(self, cell, counter):
-        neighbors = [neighbor.id for neighbor in cell.neighbors if neighbor.id is not None]
-        if random.random() < self.merge and neighbors:
-            cell.id = random.choice(neighbors)
-        else:
-            cell.id = counter
-            counter += 1
-        return counter
-
-    def update_neighbors(self):
-        idsXcells = defaultdict(list)
-        for row in self.grid:
-            for cell in row:
-                idsXcells[cell.id].append(cell)
-        for id, cells in idsXcells.items():
-            common_neighbors = []
-            for cell in cells:
-                for neighbor in cell.neighbors:
-                    if neighbor.id != id and neighbor not in common_neighbors:
-                        common_neighbors.append(neighbor)
-            for cell in cells:
-                cell.neighbors = list(set(common_neighbors))
-
-    def display_grid(self):
+    def display(self):
         for row in self.grid:
             print('\t'.join(str(cell.id) for cell in row))
 
-    def display_neighbors(self, row, column):
-        cell = self.grid[row][column]
-        print(f"Neighbors of cell ({cell.row}, {cell.column}) with id {cell.id}: {','.join(str(neighbor.id) for neighbor in cell.neighbors)}.")
+    def get_hidden_cells(self):
+        for cell in chain.from_iterable(self.grid):
+            if cell.hidden:
+                print(f"Cell at ({cell.row}, {cell.col}) is hidden with ID: {cell.id}")
 
-    def display_hidden_cells(self):
-        for row in self.grid:
-            for cell in row:
-                if cell.hidden:
-                    print(f"Cell at ({cell.row}, {cell.column}) is hidden with ID: {cell.id}")
-
-class Player:
+""" class Player:
     def __init__(self, type):
         self.type = type
 
@@ -106,4 +105,4 @@ class Human(Player):
 
 class Robot(Player):
     def __init__(self):
-        super().__init__('robot')
+        super().__init__('robot') """
