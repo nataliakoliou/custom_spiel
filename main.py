@@ -1,13 +1,15 @@
 from game import *
 from settings import *
+#from algorithm import *
 #from simulator import *
 
 # SETUP ##################################################################################################
 game = Game()
-game.run()
+game.initialize()
 
 # EXPLORE + EXPLOIT (QLEARNING) ##########################################################################
-#game.run()
+#algorithm = QLearning()
+#algorithm.run(game)
 
 # SIMULATE ###############################################################################################
 """
@@ -35,17 +37,3 @@ alpharank.print_results(payoffs, hpt, rhos=rhos, rho_m=rho_m, pi=pi)
 utils.print_rankings_table(payoffs, pi, strat_labels)
 m_network_plotter = alpharank_visualizer.NetworkPlot(payoffs, rhos, rho_m, pi, strat_labels, num_top_profiles=8)
 m_network_plotter.compute_and_draw_network() """
-
-# HELP ###################################################################################################
-"""
-grid.display_grid()
-
-grid.display_neighbors(0,0)
-grid.display_neighbors(0,1)
-grid.display_neighbors(0,2)
-grid.display_neighbors(0,3)
-grid.display_neighbors(0,4)
-grid.display_neighbors(0,5)
-
-grid.display_hidden_cells()
-"""

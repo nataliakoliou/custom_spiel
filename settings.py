@@ -1,3 +1,10 @@
+TITLE = "GAME:  Cooperative Graph Colouring Problem"
+PLAYERS = 2
+ROWS = 3
+COLUMNS = 3
+MERGE = 0.2
+HIDE = 0
+
 WHITE = (255, 255, 255)
 DARKGREY = (40, 40, 40)
 RED = (255, 0, 0)
@@ -14,14 +21,14 @@ TEAL = (0, 128, 128)
 
 COLORS = [RED, ORANGE, YELLOW, GREEN, BLUE, PINK, VIOLET, CYAN, LIME, CORAL, TEAL]
 
-FPS = 60
-TITLE = "GAME:  Cooperative Graph Colouring Problem"
-ROWS = 3
-COLUMNS = 3
-MERGE = 0.1
-HIDE = 0
-BGCOLOR = WHITE
+ALPHA = 0.1
+GAMMA = 0.9
+EPSILON = 1
+REPEAT = 3
 
+#########################################################################################
+BGCOLOR = WHITE
+FPS = 60
 TILESIZE = 80
 RADIUS = TILESIZE // 2
 WIDTH = ROWS * TILESIZE
@@ -29,5 +36,3 @@ HEIGHT = COLUMNS * TILESIZE
 GRIDWIDTH = WIDTH / TILESIZE
 GRIDHEIGHT = HEIGHT / TILESIZE
 CENTER = (TILESIZE//2, TILESIZE//2)
-
-#ALGORITHM = QLearning()

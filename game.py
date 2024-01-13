@@ -12,22 +12,24 @@ class Game:
         #self.robot = Robot()
         #self.meta = MetaGame()
 
-    def run(self):
+    def initialize(self):
         self.env.initialize()
         self.define_colors()
 
         """ self.env.display()
-        self.display_num_colors()
-        self.env.grid[0][0].display_neighbors()
-        self.env.display_hidden_cells() """
+        self.display_colors()
+        self.env.grid[2][2].display_neighbors()
+        self.env.display_hidden_cells()
+        self.env.display_blocks() """
     
     def define_colors(self):
         max_neighbors = get_max(len(cell.neighbors) for cell in chain.from_iterable(self.env.grid))
         num_colors = max_neighbors + 1
-        self.colors = COLORS[:num_colors]
+        self.colors = COLORS[:num_colors] + [None]
 
-    def display_num_colors(self):
-        print("Number of colors:", len(self.colors))
+    def display_colors(self):
+        print("Number of colors:", get_size(self.colors))
+        print("Colors:", self.colors)
 
 """ class MetaGame(Game):
     def __init__(self):
@@ -58,7 +60,6 @@ class Grid:
         self.grid = [[Cell(i, j) for j in range(self.cols)] for i in range(self.rows)]
         self.blocks = defaultdict(list)
         self.total = -1
-        self.playing = False
 
     def initialize(self):
         self.set_ids()
@@ -116,6 +117,9 @@ class Grid:
                 hidden_found = True
         if not hidden_found:
             print("Hidden cells: None")
+
+    def display_blocks(self):
+        print("Number of blocks:", get_size(self.blocks))
 
 """ class Player:
     def __init__(self, type):

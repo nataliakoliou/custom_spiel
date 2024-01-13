@@ -1,7 +1,6 @@
 import pygame as pg
 import sys
 from settings import *
-from player import *
 
 class Game:
     def __init__(self, grid):

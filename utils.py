@@ -4,3 +4,9 @@ def get_max(list):
         if element > maximum:
             maximum = element
     return maximum
+
+def get_size(struct):
+    if isinstance(struct, (dict, list, tuple, set)):
+        return len(struct)
+    else:
+        raise ValueError("Unsupported structure type")
