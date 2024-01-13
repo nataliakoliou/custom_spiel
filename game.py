@@ -16,16 +16,18 @@ class Game:
         self.env.initialize()
         self.define_colors()
 
-        self.env.display()
-        self.env.grid[0][0].get_neighbors()
-        self.env.get_hidden_cells()
-        print(self.colors)
+        """ self.env.display()
+        self.display_num_colors()
+        self.env.grid[0][0].display_neighbors()
+        self.env.display_hidden_cells() """
     
     def define_colors(self):
         max_neighbors = get_max(len(cell.neighbors) for cell in chain.from_iterable(self.env.grid))
         num_colors = max_neighbors + 1
-        print(num_colors)
         self.colors = COLORS[:num_colors]
+
+    def display_num_colors(self):
+        print("Number of colors:", len(self.colors))
 
 """ class MetaGame(Game):
     def __init__(self):
@@ -44,7 +46,7 @@ class Cell:
         self.hidden = False
         self.neighbors = []
 
-    def get_neighbors(self):
+    def display_neighbors(self):
         print(f"Neighbors of cell ({self.row}, {self.col}) with id {self.id}: {','.join(str(neighbor.id) for neighbor in self.neighbors)}.")
 
 class Grid:
@@ -106,10 +108,14 @@ class Grid:
         for row in self.grid:
             print('\t'.join(str(cell.id) for cell in row))
 
-    def get_hidden_cells(self):
+    def display_hidden_cells(self):
+        hidden_found = False
         for cell in chain.from_iterable(self.grid):
             if cell.hidden:
-                print(f"Cell at ({cell.row}, {cell.col}) is hidden with ID: {cell.id}")
+                print(f"Hidden cells: ({cell.row}, {cell.col}) with ID: {cell.id}")
+                hidden_found = True
+        if not hidden_found:
+            print("Hidden cells: None")
 
 """ class Player:
     def __init__(self, type):
