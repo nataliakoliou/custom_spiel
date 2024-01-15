@@ -21,10 +21,15 @@ TEAL = (0, 128, 128)
 
 COLORS = [RED, ORANGE, YELLOW, GREEN, BLUE, PINK, VIOLET, CYAN, LIME, CORAL, TEAL]
 
-ALPHA = 0.1
+STAGES = 10
+STEPS = 1000
+LEARNING_RATE = 0.001
 GAMMA = 0.9
 EPSILON = 1
-REPEAT = 3
+EXPLORATION = int(0.9 * STEPS)
+EXPLOITATION = STEPS - EXPLORATION
+DECAY = 1/EXPLORATION
+ACCURACY = 20
 
 #########################################################################################
 BGCOLOR = WHITE
