@@ -1,7 +1,8 @@
 # Game Description
 In our game, players interact with a grid containing 'b' blocks, where each block can be colored in one of 'c' colors. The objective is to reach a state with no conflicts, defined as neighboring blocks sharing the same color. The game involves two players—human and robot—simultaneously choosing colors for all blocks in each stage.
 
-> **Action**: (block,color) | **State:** [(block,color),(block,color),(), ...]
+**Action**: (block,color)
+**State:** [(block,color),(block,color),(), ...]
 
 ## Stochastic Property ≡ Variability in Action Space
 In this game, each round progresses until a terminal state (solution) is reached, similar to the structure of chess. However, the unique aspect lies in the dynamic nature of available actions. The environment randomly determines which actions are accessible in each round, introducing variability and preventing a fixed set of actions across rounds.
