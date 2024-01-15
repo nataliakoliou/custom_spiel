@@ -26,7 +26,9 @@ One solution to the huge state space problem is to use function approximation me
 
 ## Example
 **Input:** state
+
 **Output:** [p1, p2, ...], a list of values that indicates how good each action from that state is
+
 **Use:** for some state s, we use the nn once to output probabilities for all actions
 
 ## Challenge: Variable Action Space
@@ -39,6 +41,8 @@ To address the variable action space challenge, a Conditional Deep Q Network (CD
 
 ## Example
 **Input:** (state, action)
+
 **Output:** p, a value that indicates how good it is
+
 **Use:** for some state s, we use the neural network multiple times
 > We input into the neural network all possible (s, action) pairs. Since action = (available_block, color), these pairs are num_available_blocks * num_colors in total.
