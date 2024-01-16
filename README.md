@@ -66,7 +66,7 @@ CGCP is a strategic game where rl players, either human or robot, collaborate to
 - Agents are trained with a learning algorithm aiming to learn an optimal policy p*(s) = a for each state s.
 - The learning algorithm is likely to be DQL rather than TQL.
 
-### Tabular Q-Learning (TBQ) ❌
+### ❌ Tabular Q-Learning (TBQ)
 
 One major obstacle to implementing simple Q-learning agents in our game is the exponential growth of the state space. If you need to choose from c colors for each block b in the grid, then the total number of states (S) can be calculated as:
 
@@ -77,7 +77,7 @@ where c represents the number of colors and b is the total number of blocks in t
 
 **Example:** For instance, if there are 6 colors (c = 6) and 9 blocks (b = 9), the total number of state (S) is 10,077,696. This immense state space does not allow us to train standard Q-learning agents for our game.
 
-### Deep Q-Learning (DQL) ✔️
+### ✔️ Deep Q-Learning (DQL)
 
 One solution to the huge state space problem is to use function approximation methods like Deep Q-Networks (DQN). DQN employs neural networks to approximate the Q-values for state-action pairs. It takes the state as input and outputs Q-values for each possible action. This significantly reduces the need to explicitly store values for every possible state-action pair in a tabular form.
 
