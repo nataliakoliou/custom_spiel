@@ -19,13 +19,12 @@ class DQN(nn.Module):
         x = self.fc3(x)
         return x
 
-class TQ():  # tabular qlearning (implements only the qtable)
-
+"""class TQ():  # tabular qlearning (implements only the qtable)
+..."""
 
 class Learner:
-    def __init__(self, human, robot):
-        self.human = human  # i can retrieve their models from class Human and Robot (models can be either dqn or tq, so dont worry)
-        self.robot = robot
+    def __init__(self, game):
+        self.game = game
         self.epsilon = EPSILON
 
     def run(self):

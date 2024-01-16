@@ -4,8 +4,8 @@ from settings import *
 #from simulator import *
 
 # SETUP ##################################################################################################
-game = Game()
-game.initialize()
+game = Game(h=1, r=1)
+game.start()
 
 # EXPLORE + EXPLOIT (QLEARNING) ##########################################################################
 #model = QLearning()

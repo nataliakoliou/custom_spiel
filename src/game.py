@@ -1,26 +1,31 @@
 import random
 import torch.optim as optim
-from itertools import chain
+from itertools import product, chain
 from collections import defaultdict
 from settings import *
 from utils import *
 
 class Game:
-    def __init__(self):
+    def __init__(self, h=1, r=1):
+        self.h = h
+        self.r = r
+        self.num_players = self.h + self.r
+        self.players = {i: Player('human').create() if i < self.h else Player('robot').create() for i in range(self.num_players)}
         self.env = Grid()
         self.colors = []
-        self.human = Human()
-        self.robot = Robot()
 
-    def initialize(self):
+    def start(self):
         self.env.initialize()
         self.define_colors()
 
-        """ self.env.display()
-        self.display_colors()
-        self.env.grid[2][2].display_neighbors()
-        self.env.display_hidden_cells()
-        self.env.display_blocks() """
+        #"""
+        #self.env.display()
+        #self.display_colors()
+        #self.env.grid[2][2].display_neighbors()
+        #self.env.display_hidden_cells()
+        #self.env.display_blocks()
+        self.display_players()
+        #"""
     
     def define_colors(self):
         max_neighbors = get_max(len(cell.neighbors) for cell in chain.from_iterable(self.env.grid))
@@ -31,6 +36,10 @@ class Game:
         print("Number of colors:", get_size(self.colors))
         print("Colors:", self.colors)
 
+    def display_players(self):
+        for index, instance in self.players.items():
+            print(f"Player {index}: {instance.type}")
+        
 """ class MetaGame(Game):
     def __init__(self):
         super().__init__()
@@ -127,14 +136,17 @@ class Player:
         self.model = None
         self.optimizer = None
 
+    def create(self):
+        return Human() if self.type == "human" else Robot()
+
 class Human(Player):
     def __init__(self):
         super().__init__('human')
-        self.model = ...
-        self.optimizer = optim.AdamW(self.model.parameters(), **HUMAN_PARAMETERS)
+        self.model = None
+        #self.optimizer = optim.AdamW(self.model.parameters(), **HUMAN_PARAMETERS)
 
 class Robot(Player):
     def __init__(self):
         super().__init__('robot')
-        self.model = ...
-        self.optimizer = optim.AdamW(self.model.parameters(), **ROBOT_PARAMETERS)
+        self.model = None
+        #self.optimizer = optim.AdamW(self.model.parameters(), **ROBOT_PARAMETERS)
