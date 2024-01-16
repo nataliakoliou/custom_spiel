@@ -1,16 +1,16 @@
 import random
-from itertools import *
+import torch.optim as optim
+from itertools import chain
+from collections import defaultdict
 from settings import *
 from utils import *
-from collections import defaultdict
 
 class Game:
     def __init__(self):
         self.env = Grid()
         self.colors = []
-        #self.human = Human()
-        #self.robot = Robot()
-        #self.meta = MetaGame()
+        self.human = Human()
+        self.robot = Robot()
 
     def initialize(self):
         self.env.initialize()
@@ -121,17 +121,20 @@ class Grid:
     def display_blocks(self):
         print("Number of blocks:", get_size(self.blocks))
 
-""" class Player:
+class Player:
     def __init__(self, type):
         self.type = type
-
-    def update_qtable(self, state, action, reward, next_state):
-        ...
+        self.model = None
+        self.optimizer = None
 
 class Human(Player):
     def __init__(self):
         super().__init__('human')
+        self.model = ...
+        self.optimizer = optim.AdamW(self.model.parameters(), **HUMAN_PARAMETERS)
 
 class Robot(Player):
     def __init__(self):
-        super().__init__('robot') """
+        super().__init__('robot')
+        self.model = ...
+        self.optimizer = optim.AdamW(self.model.parameters(), **ROBOT_PARAMETERS)

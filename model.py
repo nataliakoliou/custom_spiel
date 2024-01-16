@@ -1,7 +1,5 @@
-import math
 import torch
 import torch.nn as nn
-import torch.optim as optim
 import numpy as np
 from game import *
 from settings import *
@@ -9,10 +7,6 @@ from settings import *
 class DQN(nn.Module):
     def __init__(self, input_channels, output_size):
         super(DQN, self).__init__()
-        self.steps = 0
-        self.epsilon = EPSILON
-        self.optimizer = optim.AdamW(self.parameters(), lr=self.lr)
-
         self.fc1 = nn.Linear(input_channels, 64)
         self.fc2 = nn.Linear(64, 128)             
         self.fc3 = nn.Linear(128, output_size)  # output_size = num_blocks * num_colors
@@ -25,8 +19,15 @@ class DQN(nn.Module):
         x = self.fc3(x)
         return x
 
-class AnotherClass():
-    ...    
+class TQ():  # tabular qlearning (implements only the qtable)
+
+
+class Learner:
+    def __init__(self, human, robot):
+        self.human = human  # i can retrieve their models from class Human and Robot (models can be either dqn or tq, so dont worry)
+        self.robot = robot
+        self.epsilon = EPSILON
+
     def run(self):
         for stage in range(STAGES):
             state = self.game.reset()
@@ -34,11 +35,6 @@ class AnotherClass():
 
             while not self.game.is_over():
 
-                if self.steps >= STEPS:
-                    print(f"Reached maximum number of steps ({STEPS}). Exiting...")
-                    return
-
-                self.steps += 1
                 self.epsilon = round(self.epsilon - (DECAY), ACCURACY)
 
                 action = self.explore(state) if np.random.rand() < self.epsilon else self.exploit(state)
@@ -47,7 +43,7 @@ class AnotherClass():
 
                 target = reward + self.gamma * torch.max(self.forward(torch.FloatTensor(next_state).unsqueeze(0)))
                 q_value = self.forward(torch.FloatTensor(state).unsqueeze(0))[0, action]
-                loss = F.mse_loss(q_value, target)
+                loss = loss(q_value, target)
 
                 self.optimizer.zero_grad()
                 loss.backward()

@@ -1,3 +1,5 @@
+ACCURACY = 20
+
 TITLE = "GAME:  Cooperative Graph Colouring Problem"
 PLAYERS = 2
 ROWS = 3
@@ -22,14 +24,14 @@ TEAL = (0, 128, 128)
 COLORS = [RED, ORANGE, YELLOW, GREEN, BLUE, PINK, VIOLET, CYAN, LIME, CORAL, TEAL]
 
 STAGES = 10
-STEPS = 1000
-LEARNING_RATE = 0.001
+STEPS = STAGES * ROWS * COLUMNS
 GAMMA = 0.9
 EPSILON = 1
 EXPLORATION = int(0.9 * STEPS)
 EXPLOITATION = STEPS - EXPLORATION
 DECAY = 1/EXPLORATION
-ACCURACY = 20
+HUMAN_PARAMETERS = {'lr': 0.001, 'weight_decay': 1e-5}
+ROBOT_PARAMETERS = {'lr': 0.001, 'weight_decay': 1e-5}
 
 #########################################################################################
 BGCOLOR = WHITE
