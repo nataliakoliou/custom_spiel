@@ -5,21 +5,20 @@ from collections import defaultdict
 from settings import *
 from utils import *
 from model import *
-from learner import *
+from algorithm import *
 
 class Game:
-    def __init__(self, h=1, r=1):
-        self.h = h
-        self.r = r
-        self.num_players = self.h + self.r
-        self.players = {i: Player('human').create() if i < self.h else Player('robot').create()for i in range(self.num_players)}
+    def __init__(self):
         self.env = Grid()
-        #self.learner = Learner()
-
+        self.human = Player('human').create()
+        self.robot = Player('robot').create()
+        self.algorithm = Algorithm(self)
+        self.state = []
+        
     def run(self):
-        self.env.initialize()
+        self.env.configure()
         self.define_colors()
-        #self.learner.train()
+        self.algorithm.qlearning()
         #self.simulate()
         #self.evaluate()
 
@@ -38,6 +37,16 @@ class Game:
         num_colors = max_neighbors + 1
         COLORS[:] = COLORS[:num_colors] + [None]
 
+    def reset(self):
+        self.state = [-1 for _ in range(get_size(self.env.blocks))]
+
+    def stage_over(self):
+        ...
+
+    def step(self, action):
+        ...
+
+
     def display_colors(self):
         print("Number of colors:", get_size(COLORS))
         print("Colors:", COLORS)
@@ -53,6 +62,8 @@ class Game:
     def get_utilities(self):
         utilities = None
         return utilities """
+
+##############################################################################################################
 
 class Cell:
     def __init__(self, row, col):
@@ -72,7 +83,7 @@ class Grid:
         self.blocks = defaultdict(list)
         self.total = -1
 
-    def initialize(self):
+    def configure(self):
         self.set_ids()
         self.set_blocks()
         self.set_neighbors()
@@ -127,6 +138,8 @@ class Grid:
     def display_blocks(self):
         print("Number of blocks:", get_size(self.blocks))
 
+##############################################################################################################
+        
 class Player:
     def __init__(self, type):
         self.type = type
@@ -139,11 +152,11 @@ class Player:
 class Human(Player):
     def __init__(self):
         super().__init__('human')
-        self.model = globals().get(MODEL)(1, get_size(COLORS))
-        #self.optimizer = optim.AdamW(self.model.parameters(), **HUMAN_PARAMETERS)
+        self.model = globals().get(HUMAN_MODEL)(in_channels=1, output=get_size(COLORS))
+        self.optimizer = optim.AdamW(self.model.parameters(), **HUMAN_PARAMETERS)
 
 class Robot(Player):
     def __init__(self):
         super().__init__('robot')
-        self.model = None
-        #self.optimizer = optim.AdamW(self.model.parameters(), **ROBOT_PARAMETERS)
+        self.model = globals().get(ROBOT_MODEL)(in_channels=1, output=get_size(COLORS))
+        self.optimizer = optim.AdamW(self.model.parameters(), **ROBOT_PARAMETERS)

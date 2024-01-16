@@ -3,19 +3,16 @@ import numpy as np
 from game import *
 from settings import *
 
-class Learner:
+class Algorithm:
     def __init__(self, game):
         self.game = game
 
-    def print_col(self):
-        print(COLORS)
-
-    def train(self):
-        for stage in range(STAGES):
+    def qlearning(self):
+        for repeat in range(REPEATS):
             state = self.game.reset()
             total_reward = 0
 
-            while not self.game.is_over():
+            while not self.game.stage_over():
                 global EPSILON
                 EPSILON = round(EPSILON - (DECAY), ACCURACY)
 

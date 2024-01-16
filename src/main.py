@@ -1,10 +1,7 @@
 from game import *
-from settings import *
-#from model import *
-#from simulator import *
 
 # LEARNING ###############################################################################################
-game = Game(h=1, r=1)
+game = Game()
 game.run()
 
 # VISUALIZE ###############################################################################################

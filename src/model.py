@@ -3,11 +3,11 @@ from game import *
 from settings import *
 
 class DQN(nn.Module):
-    def __init__(self, input_channels, output_size):
+    def __init__(self, in_channels, output):
         super(DQN, self).__init__()
-        self.fc1 = nn.Linear(input_channels, 64)
+        self.fc1 = nn.Linear(in_channels, 64)
         self.fc2 = nn.Linear(64, 128)             
-        self.fc3 = nn.Linear(128, output_size)  # output_size = num_blocks * num_colors
+        self.fc3 = nn.Linear(128, output)  # output_size = num_blocks * num_colors
         self.relu = nn.ReLU()
 
     def forward(self, x):  # x: (batch, channels, height, width) = (batch, 1, 1, b)
