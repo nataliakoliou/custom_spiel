@@ -4,37 +4,43 @@ from itertools import product, chain
 from collections import defaultdict
 from settings import *
 from utils import *
+from model import *
+from learner import *
 
 class Game:
     def __init__(self, h=1, r=1):
         self.h = h
         self.r = r
         self.num_players = self.h + self.r
-        self.players = {i: Player('human').create() if i < self.h else Player('robot').create() for i in range(self.num_players)}
+        self.players = {i: Player('human').create() if i < self.h else Player('robot').create()for i in range(self.num_players)}
         self.env = Grid()
-        self.colors = []
+        #self.learner = Learner()
 
-    def start(self):
+    def run(self):
         self.env.initialize()
         self.define_colors()
+        #self.learner.train()
+        #self.simulate()
+        #self.evaluate()
 
-        #"""
+        """
         #self.env.display()
         #self.display_colors()
-        #self.env.grid[2][2].display_neighbors()
+        #self.env.grid[0][1].display_neighbors()
         #self.env.display_hidden_cells()
         #self.env.display_blocks()
-        self.display_players()
-        #"""
+        #self.display_players()
+        """
     
     def define_colors(self):
+        global COLORS
         max_neighbors = get_max(len(cell.neighbors) for cell in chain.from_iterable(self.env.grid))
         num_colors = max_neighbors + 1
-        self.colors = COLORS[:num_colors] + [None]
+        COLORS[:] = COLORS[:num_colors] + [None]
 
     def display_colors(self):
-        print("Number of colors:", get_size(self.colors))
-        print("Colors:", self.colors)
+        print("Number of colors:", get_size(COLORS))
+        print("Colors:", COLORS)
 
     def display_players(self):
         for index, instance in self.players.items():
@@ -62,11 +68,7 @@ class Cell:
 
 class Grid:
     def __init__(self):
-        self.rows = ROWS
-        self.cols = COLUMNS
-        self.merge = MERGE
-        self.hide = HIDE
-        self.grid = [[Cell(i, j) for j in range(self.cols)] for i in range(self.rows)]
+        self.grid = [[Cell(i, j) for j in range(COLUMNS)] for i in range(ROWS)]
         self.blocks = defaultdict(list)
         self.total = -1
 
@@ -77,12 +79,12 @@ class Grid:
         self.hide_cells()
 
     def set_ids(self):
-        for i, j in product(range(self.rows), range(self.cols)):
+        for i, j in product(range(ROWS), range(COLUMNS)):
             cell = self.grid[i][j]
             cell.neighbors = [self.grid[i + dr][j + dc] for dr, dc in [(0, -1), (0, 1), (-1, 0), (1, 0)]
                                     if self.is_valid(i + dr, j + dc)]
             ids = [neighbor.id for neighbor in cell.neighbors if neighbor.id is not None]
-            if random.random() < self.merge and ids:
+            if random.random() < MERGE and ids:
                 cell.id = random.choice(ids)
             else:
                 self.total += 1
@@ -102,17 +104,12 @@ class Grid:
 
     def hide_cells(self):
         for cells in self.blocks.values():
-            if random.random() < self.hide:
+            if random.random() < HIDE:
                 for c in cells:
                     c.hidden = True
 
     def is_valid(self, row, col):
-        return 0 <= row < self.rows and 0 <= col < self.cols
-    
-    def define_colors(self):
-        max_neighbors = get_max(len(cell.neighbors) for cell in chain.from_iterable(self.grid))
-        num_colors = max_neighbors + 1
-        self.colors = COLORS[:num_colors]
+        return 0 <= row < ROWS and 0 <= col < COLUMNS
     
     def display(self):
         for row in self.grid:
@@ -142,7 +139,7 @@ class Player:
 class Human(Player):
     def __init__(self):
         super().__init__('human')
-        self.model = None
+        self.model = globals().get(MODEL)(1, get_size(COLORS))
         #self.optimizer = optim.AdamW(self.model.parameters(), **HUMAN_PARAMETERS)
 
 class Robot(Player):
