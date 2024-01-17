@@ -1,3 +1,5 @@
+from colors import *
+
 ACCURACY = 20
 
 TITLE = "GAME:  Cooperative Graph Colouring Problem"
@@ -7,23 +9,10 @@ COLUMNS = 2
 MERGE = 0.1
 HIDE = 0
 
-WHITE = (255, 255, 255)
-DARKGREY = (40, 40, 40)
-RED = (255, 0, 0)
-ORANGE = (255, 165, 0)
-YELLOW = (255, 255, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
-PINK = (255, 192, 203)
-VIOLET = (138, 43, 226)
-CYAN = (0, 255, 255)
-LIME = (0, 255, 0)
-CORAL = (255, 127, 80)
-TEAL = (0, 128, 128)
-
-COLORS = [RED, ORANGE, YELLOW, GREEN, BLUE, PINK, VIOLET, CYAN, LIME, CORAL, TEAL]  # GLOBAL
+COLORS = [Red(), Orange(), Yellow(), Green(), Blue(), Pink(), Violet(), Cyan(), Coral(), Teal()]  # GLOBAL
 
 REPEATS = 10
+STAGES = 10 # TO-DELETE
 STEPS = STAGES * ROWS * COLUMNS
 GAMMA = 0.9
 EPSILON = 1
@@ -36,7 +25,7 @@ HUMAN_PARAMETERS = {'lr': 0.001, 'weight_decay': 1e-5}
 ROBOT_PARAMETERS = {'lr': 0.001, 'weight_decay': 1e-5}
 
 #########################################################################################
-BGCOLOR = WHITE
+BGCOLOR = NC()
 FPS = 60
 TILESIZE = 80
 RADIUS = TILESIZE // 2

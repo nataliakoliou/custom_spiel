@@ -2,7 +2,12 @@ from game import *
 
 # LEARNING ###############################################################################################
 game = Game()
-game.run()
+algorithm = Algorithm(game)
+
+game.load()
+#algorithm.qlearning()
+#algorithm.simulate()
+#algorithm.evaluate()
 
 # VISUALIZE ###############################################################################################
 """
