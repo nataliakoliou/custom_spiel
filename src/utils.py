@@ -1,3 +1,5 @@
+from settings import *
+
 def get_max(list):
     maximum = float('-inf')
     for element in list:
@@ -10,3 +12,6 @@ def get_size(struct):
         return len(struct)
     else:
         raise ValueError("Unsupported structure type")
+    
+def is_valid(row, col):
+    return 0 <= row < ROWS and 0 <= col < COLUMNS

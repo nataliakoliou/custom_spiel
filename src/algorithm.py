@@ -1,3 +1,4 @@
+import copy
 import torch
 import numpy as np
 from game import *
@@ -6,19 +7,24 @@ from settings import *
 class Algorithm:
     def __init__(self, game):
         self.game = game
+        self.human_action = None
+        self.robot_action = None
 
     def qlearning(self):
+        self.game.env.init_state()
+
         for repeat in range(REPEATS):
-            state = self.game.reset()
+            self.game.reset()
             total_reward = 0
 
             while not self.game.stage_over():
                 global EPSILON
                 EPSILON = round(EPSILON - (DECAY), ACCURACY)
+                self.game.env.prev_state = copy.deepcopy(self.game.env.state)
 
-                action = self.explore(state) if np.random.rand() < EPSILON else self.exploit(state)
-
-                next_state, reward = self.game.step(action)
+                for player in [self.game.human, self.game.robot]:
+                    player.action = self.explore(player) if np.random.rand() < EPSILON else self.exploit(player)
+                    player.reward = self.game.step(player.action)
 
                 target = reward + self.gamma * torch.max(self.forward(torch.FloatTensor(next_state).unsqueeze(0)))
                 q_value = self.forward(torch.FloatTensor(state).unsqueeze(0))[0, action]
@@ -33,10 +39,10 @@ class Algorithm:
 
             print(f"Episode {stage + 1}/{STAGES}, Total Reward: {total_reward}")
 
-    def explore(self, state):
+    def explore(self, player):
         return self.game.sample_random_action()
 
-    def exploit(self, state):
+    def exploit(self, player):
         state_tensor = torch.FloatTensor(state).unsqueeze(0)
         q_values = self.forward(state_tensor)
         return q_values.argmax().item()
