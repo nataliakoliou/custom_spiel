@@ -1,5 +1,14 @@
+from utils import *
 from colors import *
 
+# MUTABLE OBJECTS (GLOBAL AMONG MODULES)
+BLOCKS = Global(0)
+REVEAL = Global(0)
+COLORS = [Red(), Orange(), Yellow(), Green(), Blue(), Pink(), Violet(), Cyan(), Coral(), Teal()]
+HIDDEN = Hidden()
+NC = NC()
+
+# IMMUTABLE OBJECTS
 ACCURACY = 20
 
 TITLE = "GAME:  Cooperative Graph Colouring Problem"
@@ -7,9 +16,7 @@ PLAYERS = 2
 ROWS = 2
 COLUMNS = 2
 MERGE = 0.1
-HIDE = 0
-
-COLORS = [Red(), Orange(), Yellow(), Green(), Blue(), Pink(), Violet(), Cyan(), Coral(), Teal()]  # GLOBAL
+Wr = 0.2
 
 REPEATS = 10
 STAGES = 10 # TO-DELETE
@@ -25,7 +32,7 @@ HUMAN_PARAMETERS = {'lr': 0.001, 'weight_decay': 1e-5}
 ROBOT_PARAMETERS = {'lr': 0.001, 'weight_decay': 1e-5}
 
 #########################################################################################
-BGCOLOR = NC()
+BGCOLOR = NC
 FPS = 60
 TILESIZE = 80
 RADIUS = TILESIZE // 2

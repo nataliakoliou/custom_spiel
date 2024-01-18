@@ -1,55 +1,58 @@
 from abc import ABC
 
+class Global:
+    def __init__(self, value=0):
+        self.value = value
+
 class Color(ABC):
-    def __init__(self, name, rgb, id):
-        self.name = name
+    def __init__(self, rgb, encoding):
         self.rgb = rgb
-        self.id = id
+        self.encoding = encoding
 
 class Hidden(Color):
     def __init__(self):
-        super().__init__("Hidden", (40, 40, 40), -1)
+        super().__init__((40, 40, 40), None)
 
 class NC(Color):
     def __init__(self):
-        super().__init__("NC", (255, 255, 255), 0)
+        super().__init__((255, 255, 255), None)
 
 class Red(Color):
     def __init__(self):
-        super().__init__("Red", (255, 0, 0), 1)
+        super().__init__((255, 0, 0), None)
 
 class Orange(Color):
     def __init__(self):
-        super().__init__("Orange", (255, 165, 0), 2)
+        super().__init__((255, 165, 0), None)
 
 class Yellow(Color):
     def __init__(self):
-        super().__init__("Yellow", (255, 255, 0), 3)
+        super().__init__((255, 255, 0), None)
 
 class Green(Color):
     def __init__(self):
-        super().__init__("Green", (0, 255, 0), 4)
+        super().__init__((0, 255, 0), None)
 
 class Blue(Color):
     def __init__(self):
-        super().__init__("Blue", (0, 0, 255), 5)
+        super().__init__((0, 0, 255), None)
 
 class Pink(Color):
     def __init__(self):
-        super().__init__("Pink", (255, 192, 203), 6)
+        super().__init__((255, 192, 203), None)
 
 class Violet(Color):
     def __init__(self):
-        super().__init__("Violet", (138, 43, 226), 7)
+        super().__init__((138, 43, 226), None)
 
 class Cyan(Color):
     def __init__(self):
-        super().__init__("Cyan", (0, 255, 255), 8)
+        super().__init__((0, 255, 255), None)
 
 class Coral(Color):
     def __init__(self):
-        super().__init__("Coral", (255, 127, 80), 10)
+        super().__init__((255, 127, 80), None)
 
 class Teal(Color):
     def __init__(self):
-        super().__init__("Teal", (0, 128, 128), 11)
+        super().__init__((0, 128, 128), None)

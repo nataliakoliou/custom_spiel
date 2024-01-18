@@ -10,15 +10,15 @@ class Grid:
         self.grid = [[Cell(i, j) for j in range(COLUMNS)] for i in range(ROWS)]
         self.blocks = []
         self.state = []
-        self.prev_state = []
-        self.total = 0  # number of blocks
 
-    def configure(self):
-        self.set_ids()
-        self.set_blocks()
-        self.set_neighbors()
+    def load(self):
+        self.init_cells()
+        self.init_blocks()
+        self.init_colors()
+        REVEAL.value = 9
 
-    def set_ids(self):
+    def init_cells(self):
+        global BLOCKS
         for i, j in product(range(ROWS), range(COLUMNS)):
             cell = self.grid[i][j]
             cell.neighbors = [self.grid[i + dr][j + dc] for dr, dc in [(0, -1), (0, 1), (-1, 0), (1, 0)]
@@ -27,44 +27,50 @@ class Grid:
             if random.random() < MERGE and ids:
                 cell.id = random.choice(ids)
             else:
-                cell.id = self.total
-                self.total += 1
+                cell.id = BLOCKS.value
+                BLOCKS.value += 1
 
-    def set_blocks(self):
-        self.blocks = [Block(id) for id in range(self.total)]
+    def init_blocks(self):
+        self.blocks = [Block(id) for id in range(BLOCKS.value)]
         for cell in chain.from_iterable(self.grid):
             self.blocks[cell.id].cells.append(cell)
-
-    def set_neighbors(self):
         for block in self.blocks:
             shared = set()
             for cell in block.cells:
                 shared |= {neighbor for neighbor in cell.neighbors if neighbor.id != block.id}
             block.neighbors = list(shared)
 
+    def init_colors(self):
+        global COLORS, HIDDEN, NC
+        max_neighbors = get_max(len(cell.neighbors) for cell in chain.from_iterable(self.grid))
+        num_colors = max_neighbors + 1; num_encodings = num_colors + 2
+        COLORS[:] = COLORS[:num_colors]
+        HIDDEN.encoding, NC.encoding = encode(k=1, n=num_encodings), encode(k=2, n=num_encodings)
+        for i, color in enumerate(COLORS, start=3):
+            color.encoding = encode(k=i, n=num_encodings)
+
     def init_state(self):
-        self.state = [block.color.id for block in self.blocks]
+        self.state = [HIDDEN.encoding for _ in self.blocks]
 
     def reset(self):
         for block in self.blocks:
-            block.set_color(Hidden())
-            self.state[block.id] = block.color.id
+            block.set_color(HIDDEN)
+            self.state[block.id] = block.color.encoding
 
-    """
-    def hide_blocks(self):
-        for block in self.blocks:
-            if random.random() < HIDE:
-                block.hidden = True
-                for cell in block.cells:
-                    cell.hidden = block.hidden
-    """
+    def step(self):
+        global REVEAL
+        REVEAL.value = random.randint(PLAYERS, int(PLAYERS + Wr * BLOCKS.value))
+        hidden_blocks = [block for block in self.blocks if block.is_hidden()]
+        r = min(len(hidden_blocks), REVEAL.value)
+        for block in random.sample(hidden_blocks, r):
+            block.set_color(NC)
 
 class Cell:
     def __init__(self, row, col):
         self.row = row
         self.col = col
         self.id = None
-        self.color = Hidden()
+        self.color = None
         self.neighbors = []  # before merging cells
 
     def set_color(self, color):
@@ -79,7 +85,7 @@ class Cell:
 class Block:
     def __init__(self, id):
         self.id = id
-        self.color = Hidden()
+        self.color = None
         self.cells = []
         self.neighbors = []  # after merging cells
 

@@ -1,5 +1,3 @@
-from settings import *
-
 def get_max(list):
     maximum = float('-inf')
     for element in list:
@@ -13,5 +11,13 @@ def get_size(struct):
     else:
         raise ValueError("Unsupported structure type")
     
-def is_valid(row, col):
-    return 0 <= row < ROWS and 0 <= col < COLUMNS
+def encode(k, n):
+    if k > n:
+        raise ValueError("k should be less than or equal to n")
+    encoding = [0 for _ in range(n)]
+    encoding[k - 1] = 1
+    return encoding
+
+class Global:
+    def __init__(self, value=0):
+        self.value = value

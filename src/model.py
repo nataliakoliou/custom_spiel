@@ -16,6 +16,24 @@ class DQN(nn.Module):
         x = self.relu(self.fc2(x))
         x = self.fc3(x)
         return x
+    
+class DQN(nn.Module):
+    def __init__(self, num_colors, embedding_dim, output_size):
+        super(DQN, self).__init__()
+        self.embedding = nn.Embedding(num_embeddings=num_colors, embedding_dim=embedding_dim)
+        self.fc1 = nn.Linear(embedding_dim, 64)
+        self.fc2 = nn.Linear(64, 128)             
+        self.fc3 = nn.Linear(128, output_size)
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        x = self.embedding(x.view(-1))  # Apply embedding to each id
+        x = x.view(x.size(0), -1)
+        x = self.relu(self.fc1(x))
+        x = self.relu(self.fc2(x))
+        x = self.fc3(x)
+        return x
+
 
 """class TQ():  # tabular qlearning (implements only the qtable)
 ...

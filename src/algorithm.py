@@ -18,13 +18,15 @@ class Algorithm:
             total_reward = 0
 
             while not self.game.stage_over():
+                self.game.step()
                 global EPSILON
                 EPSILON = round(EPSILON - (DECAY), ACCURACY)
                 self.game.env.prev_state = copy.deepcopy(self.game.env.state)
 
                 for player in [self.game.human, self.game.robot]:
-                    player.action = self.explore(player) if np.random.rand() < EPSILON else self.exploit(player)
-                    player.reward = self.game.step(player.action)
+                    self.explore(player) if np.random.rand() < EPSILON else self.exploit(player)
+                
+                """player.reward = self.game.step(player.action)
 
                 target = reward + self.gamma * torch.max(self.forward(torch.FloatTensor(next_state).unsqueeze(0)))
                 q_value = self.forward(torch.FloatTensor(state).unsqueeze(0))[0, action]
@@ -37,10 +39,10 @@ class Algorithm:
                 total_reward += reward
                 state = next_state
 
-            print(f"Episode {stage + 1}/{STAGES}, Total Reward: {total_reward}")
+            print(f"Episode {stage + 1}/{STAGES}, Total Reward: {total_reward}")"""
 
     def explore(self, player):
-        return self.game.sample_random_action()
+        player.play(random=True)
 
     def exploit(self, player):
         state_tensor = torch.FloatTensor(state).unsqueeze(0)

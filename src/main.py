@@ -1,4 +1,5 @@
 from game import *
+from settings import *
 #from algorithm import *
 
 # LEARNING ###############################################################################################
@@ -6,6 +7,37 @@ game = Game()
 #algorithm = Algorithm(game)
 
 game.load()
+
+"""
+#NOTE: DISPLAYS ENVIRONMENT
+for row in game.env.grid:
+    print('\t'.join(str(cell.id) for cell in row))
+"""
+    
+"""
+#NOTE: DISPLAYS COLORS
+print("Number of colors:", get_size(COLORS))
+print("Colors:", [color.__class__.__name__ for color in COLORS])
+"""
+
+"""
+#NOTE: DISPLAYS CELL'S NEIGHBORS
+cell = game.env.grid[0][0]
+print(f"Neighbors of cell ({cell.row}, {cell.col}) with id {cell.id}: {','.join(str(neighbor.id) for neighbor in cell.neighbors)}.")
+"""
+
+"""
+#NOTE: DISPLAYS BLOCK'S NEIGHBORS
+block = game.env.blocks[0]
+print(f"Neighbors of block with id {block.id}: {','.join(str(neighbor.id) for neighbor in block.neighbors)}.")
+"""
+
+"""
+#NOTE: DISPLAYS COLORS
+print("Number of blocks:", BLOCKS.value)
+"""
+
+
 #algorithm.qlearning()
 #algorithm.simulate()
 #algorithm.evaluate()
