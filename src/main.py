@@ -1,8 +1,9 @@
 from game import *
+#from algorithm import *
 
 # LEARNING ###############################################################################################
 game = Game()
-algorithm = Algorithm(game)
+#algorithm = Algorithm(game)
 
 game.load()
 #algorithm.qlearning()

@@ -1,4 +1,5 @@
 import torch.optim as optim
+from environment import *
 from utils import *
 from settings import *
 
@@ -20,13 +21,13 @@ class Player:
 class Human(Player):
     def __init__(self):
         super().__init__('human')
-        self.model = globals().get(HUMAN_MODEL)(in_channels=1, output=get_size(COLORS))
-        self.optimizer = optim.AdamW(self.model.parameters(), **HUMAN_PARAMETERS)
-        self.action = (Block(2), Red())
+        #self.model = globals().get(HUMAN_MODEL)(in_channels=1, output=get_size(COLORS))
+        #self.optimizer = optim.AdamW(self.model.parameters(), **HUMAN_PARAMETERS)
+        self.action = None
 
 class Robot(Player):
     def __init__(self):
         super().__init__('robot')
-        self.model = globals().get(ROBOT_MODEL)(in_channels=1, output=get_size(COLORS))
-        self.optimizer = optim.AdamW(self.model.parameters(), **ROBOT_PARAMETERS)
+        #self.model = globals().get(ROBOT_MODEL)(in_channels=1, output=get_size(COLORS))
+        #self.optimizer = optim.AdamW(self.model.parameters(), **ROBOT_PARAMETERS)
         self.action = None

@@ -31,7 +31,7 @@ class Grid:
                 self.total += 1
 
     def set_blocks(self):
-        self.blocks = [Block(id) for id in self.total]
+        self.blocks = [Block(id) for id in range(self.total)]
         for cell in chain.from_iterable(self.grid):
             self.blocks[cell.id].cells.append(cell)
 
@@ -50,19 +50,14 @@ class Grid:
             block.set_color(Hidden())
             self.state[block.id] = block.color.id
 
-    """def hide_blocks(self):
+    """
+    def hide_blocks(self):
         for block in self.blocks:
             if random.random() < HIDE:
                 block.hidden = True
                 for cell in block.cells:
-                    cell.hidden = block.hidden"""
-    
-    def display(self):
-        for row in self.grid:
-            print('\t'.join(str(cell.id) for cell in row))
-
-    def display_blocks(self):
-        print("Number of blocks:", get_size(self.blocks))
+                    cell.hidden = block.hidden
+    """
 
 class Cell:
     def __init__(self, row, col):
@@ -81,9 +76,6 @@ class Cell:
     def is_hidden(self):
         return isinstance(self.color, NC)
 
-    def display_neighbors(self):
-        print(f"Neighbors of cell ({self.row}, {self.col}) with id {self.id}: {','.join(str(neighbor.id) for neighbor in self.neighbors)}.")
-
 class Block:
     def __init__(self, id):
         self.id = id
@@ -100,6 +92,3 @@ class Block:
     
     def is_uncolored(self):
         return isinstance(self.color, NC)
-
-    def display_neighbors(self):
-        print(f"Neighbors of block with id {self.id}: {','.join(str(neighbor.id) for neighbor in self.neighbors)}.")
