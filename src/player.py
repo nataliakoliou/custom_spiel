@@ -1,52 +1,49 @@
 import random
-import torch.optim as optim
-from environment import *
+import torch.nn as nn
 from utils import *
-from settings import *
 
 class Player:
-    def __init__(self, type):
+    def __init__(self, type, model, optimizer, lr, weight_decay):
         self.type = type
-        self.model = None
-        self.optimizer = None
+        self.model = model
+        self.optimizer = optimizer
+        self.lr = lr
+        self.weight_decay = weight_decay
+        self.state = []
         self.space = []
         self.action = None
+        self.q = 0
+        self.loss = 0
+        self.rewards = 0
+
+    @property
+    def estimates(self):
+        return self.model(self.state)
     
-    def load(self):
-        for counter, (block, color) in enumerate(product(range(BLOCKS.value), COLORS)):
-            action = Action(block, color)
-            action.id = counter
-            self.space.append(action)
+    def reset(self):
+        self.rewards = 0
 
-    def play(self, random=False):
-        if random:
-            self.action = random.choice(self.space)
-            self.action.increment("exploration")
-        else:
-            pass
+    def update(self, state, space, load=False):
+        self.space = space if load else self.space
+        self.state = state
 
-class Human(Player):
-    def __init__(self):
-        super().__init__('human')
-        #self.model = globals().get(HUMAN_MODEL)(in_channels=1, output=get_size(COLORS))
-        #self.optimizer = optim.AdamW(self.model.parameters(), **HUMAN_PARAMETERS)
-        self.space = []
-        self.action = None
+    def explore(self):
+        self.action = random.choice(self.space)
+        q_values = self.estimates
+        self.q = q_values[self.action.id]
+        self.action.increment("explore")
 
-class Robot(Player):
-    def __init__(self):
-        super().__init__('robot')
-        #self.model = globals().get(ROBOT_MODEL)(in_channels=1, output=get_size(COLORS))
-        #self.optimizer = optim.AdamW(self.model.parameters(), **ROBOT_PARAMETERS)
-        self.space = []
-        self.action = None
+    def exploit(self):
+        q_values = self.estimates
+        id = get_id(list=q_values, value=max(q_values))
+        self.q = q_values[id]
+        self.action = self.space[id]
+        self.action.increment("exploit")
 
-class Action:
-    def __init__(self, block, color):
-        self.block = block
-        self.color = color
-        self.id = None
-        self.counter = {"exploration": 0, "exploitation": 0}
-
-    def increment(self, phase):
-        self.counter[phase] += 1
+    def optimize(self, reward):
+        self.rewards += reward
+        target = reward + self.gamma * max(self.estimates)
+        self.loss = nn.MSELoss()(self.q, target)
+        self.optimizer.zero_grad()
+        self.loss.backward()
+        self.optimizer.step()

@@ -1,6 +1,6 @@
 import torch.nn as nn
-from game import *
-from settings import *
+import numpy as np
+import torch
 
 class DQN(nn.Module):
     def __init__(self, in_channels, output):
@@ -9,57 +9,27 @@ class DQN(nn.Module):
         self.fc2 = nn.Linear(64, 128)             
         self.fc3 = nn.Linear(128, output)  # output_size = num_blocks * num_colors
         self.relu = nn.ReLU()
+        self.softmax = nn.Softmax(dim=1)
 
-    def forward(self, x):  # x: (batch, channels, height, width) = (batch, 1, 1, b)
+    def forward(self, x):
+        x = self.embedding(x)
         x = x.view(x.size(0), -1)
-        x = self.relu(self.fc1(x))
-        x = self.relu(self.fc2(x))
+        x = self.fc1(x)
+        x = self.relu(x)
+        x = self.fc2(x)
+        x = self.relu(x)
         x = self.fc3(x)
+        x = self.softmax(x)
+        x = self.qvalues(x)
         return x
     
-class DQN(nn.Module):
-    def __init__(self, num_colors, embedding_dim, output_size):
-        super(DQN, self).__init__()
-        self.embedding = nn.Embedding(num_embeddings=num_colors, embedding_dim=embedding_dim)
-        self.fc1 = nn.Linear(embedding_dim, 64)
-        self.fc2 = nn.Linear(64, 128)             
-        self.fc3 = nn.Linear(128, output_size)
-        self.relu = nn.ReLU()
+    def embedding(self, state): # state: [[0,1,0,0,0], [0,0,1,0,0],...]
+        state = np.array([[block.color.encoding for block in state]])
+        state = torch.tensor(state, dtype=torch.float32) # (batch size, num_blocks, num_colors)
+        state = state.unsqueeze(1) # (batch, 1, num_blocks, num_colors)
+        return state
+    
+    def qvalues(self, output):
+        output = output.view(-1)
+        return output.tolist()
 
-    def forward(self, x):
-        x = self.embedding(x.view(-1))  # Apply embedding to each id
-        x = x.view(x.size(0), -1)
-        x = self.relu(self.fc1(x))
-        x = self.relu(self.fc2(x))
-        x = self.fc3(x)
-        return x
-
-
-"""class TQ():  # tabular qlearning (implements only the qtable)
-...
-"""
-
-#############################################################################################################
-
-""" class DQN(nn.Module):
-    def __init__(self, game, input_channels, output_size):
-        super(DQN, self).__init__()
-        self.game = game
-        self.num_blocks = get_size(self.game.env.blocks)
-
-        self.conv1 = nn.Conv2d(input_channels, 32, kernel_size=3, stride=1, padding=1)
-        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
-        self.conv3 = nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1)
-
-        self.fc1 = nn.Linear(128 * 1 * self.num_blocks, 256)  # channels * height * width
-        self.fc2 = nn.Linear(256, output_size)  # output_size = num_blocks * num_colors
-        self.relu = nn.ReLU()
-
-    def forward(self, x):
-        x = self.relu(self.conv1(x))
-        x = self.relu(self.conv2(x))
-        x = self.relu(self.conv3(x))
-        x = x.view(x.size(0), -1)
-        x = self.relu(self.fc1(x))
-        x = self.fc2(x)
-        return x"""

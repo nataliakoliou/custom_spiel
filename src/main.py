@@ -1,12 +1,57 @@
 from game import *
-from settings import *
-#from algorithm import *
+from grid import *
+from player import *
 
-# LEARNING ###############################################################################################
-game = Game()
-#algorithm = Algorithm(game)
+env = Grid(
+    rows=2, 
+    cols=2, 
+    merge=0.1,
+    min_reveal=2,
+    wr=0.2
+    )
+
+#TODO:
+#self.model = globals().get(HUMAN_MODEL)(in_channels=1, output=get_size(COLORS))
+#self.optimizer = optim.AdamW(self.model.parameters(), **HUMAN_PARAMETERS)
+
+human = Player(
+    type="human",
+    model="DQN",
+    optimizer="AdamW",
+    lr=0.001,
+    weight_decay=1e-5
+    )
+
+robot = Player(
+    type="robot",
+    model="DQN",
+    optimizer="AdamW",
+    lr=0.001,
+    weight_decay=1e-5
+    )
+
+game = Game(
+    title="CGCP.1: Human-Robot",
+    repeats=10,
+    env=env,
+    human=human,
+    robot=robot,
+    gamma=0.9,
+    epsilon=1,
+    accuracy=10
+)
 
 game.load()
+
+"""game.learn(dir=.../models/game1)
+#train human and robot models
+
+game.simulate(dir=.../models/game1) 
+#dir is the local directory where we store human and robot's trained models
+
+meta_game.evaluate(algorithm="alpha-rank", dir=.../simulations)
+#dir is the local directory where we store the simulations payoff tables"""
+
 
 """
 #NOTE: DISPLAYS ENVIRONMENT
@@ -33,14 +78,9 @@ print(f"Neighbors of block with id {block.id}: {','.join(str(neighbor.id) for ne
 """
 
 """
-#NOTE: DISPLAYS COLORS
+#NOTE: DISPLAYS BLOCKS
 print("Number of blocks:", BLOCKS.value)
 """
-
-
-#algorithm.qlearning()
-#algorithm.simulate()
-#algorithm.evaluate()
 
 # VISUALIZE ###############################################################################################
 """

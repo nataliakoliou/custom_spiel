@@ -1,9 +1,5 @@
 from abc import ABC
 
-class Global:
-    def __init__(self, value=0):
-        self.value = value
-
 class Color(ABC):
     def __init__(self, rgb, encoding):
         self.rgb = rgb
@@ -56,3 +52,7 @@ class Coral(Color):
 class Teal(Color):
     def __init__(self):
         super().__init__((0, 128, 128), None)
+
+COLORS = [Red(), Orange(), Yellow(), Green(), Blue(), Pink(), Violet(), Cyan(), Coral(), Teal()]
+HIDDEN=Hidden()
+NC=NC()

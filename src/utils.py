@@ -1,3 +1,5 @@
+import random
+
 def get_max(list):
     maximum = float('-inf')
     for element in list:
@@ -18,6 +20,6 @@ def encode(k, n):
     encoding[k - 1] = 1
     return encoding
 
-class Global:
-    def __init__(self, value=0):
-        self.value = value
+def get_id(list, value):
+    ids = [i for i, x in enumerate(list) if x == value]
+    return random.choice(ids) if ids else None
