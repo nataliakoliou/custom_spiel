@@ -1,33 +1,49 @@
+import torch.nn as nn
+
 from game import *
 from grid import *
 from player import *
 
+########## TODO ##########
+# 1) Replay Memory
+# 2) Batch Size
+# 3) Simulation
+# 4) Model Architecture
+# 5) Colors Representation
+# 6) Code Structure
+# 7) Testers
+##########################
+
 env = Grid(
     rows=2, 
     cols=2, 
-    merge=0.1,
-    min_reveal=2,
-    wr=0.2
+    merge=0.2,
+    minR=2,
+    wR=0.2
     )
-
-#TODO:
-#self.model = globals().get(HUMAN_MODEL)(in_channels=1, output=get_size(COLORS))
-#self.optimizer = optim.AdamW(self.model.parameters(), **HUMAN_PARAMETERS)
 
 human = Player(
     type="human",
     model="DQN",
+    criterion = nn.MSELoss(),
     optimizer="AdamW",
     lr=0.001,
-    weight_decay=1e-5
+    weight_decay=1e-5,
+    bG=+1,
+    bP=-1,
+    wS=-3
     )
 
 robot = Player(
     type="robot",
     model="DQN",
+    criterion = nn.SmoothL1Loss(),
     optimizer="AdamW",
     lr=0.001,
-    weight_decay=1e-5
+    weight_decay=1e-5,
+    bG=+1,
+    bP=-1,
+    wS=-3
     )
 
 game = Game(
@@ -38,10 +54,12 @@ game = Game(
     robot=robot,
     gamma=0.9,
     epsilon=1,
-    accuracy=10
-)
+    accuracy=4,
+    dir=r"C:\Users\natalia\git-repos\custom_spiel"
+    )
 
 game.load()
+
 
 """game.learn(dir=.../models/game1)
 #train human and robot models

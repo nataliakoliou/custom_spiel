@@ -14,10 +14,14 @@ class Grid:
         self.state, self.space = [], []
         self.num_blocks = 0
 
+    @property
+    def maxR(self):
+        return int(self.minR + self.maxR * self.num_blocks)
+
     def load(self):
         self.load_cells()
-        self.load_colors()
         self.load_state()
+        self.load_colors()
         self.load_space()
 
     def load_cells(self):
@@ -30,15 +34,7 @@ class Grid:
                 cell.id = random.choice(ids)
             else:
                 cell.id = self.num_blocks
-                self.num_blocks.value += 1
-
-    def load_colors(self):
-        max_neighbors = get_max(len(cell.neighbors) for cell in chain.from_iterable(self.grid))
-        num_colors = max_neighbors + 1; num_encodings = num_colors + 2
-        COLORS[:] = COLORS[:num_colors]
-        HIDDEN.encoding, NC.encoding = encode(k=1, n=num_encodings), encode(k=2, n=num_encodings)
-        for i, color in enumerate(COLORS, start=3):
-            color.encoding = encode(k=i, n=num_encodings)
+                self.num_blocks += 1
 
     def load_state(self):
         self.state = [Block(id) for id in range(self.num_blocks)]
@@ -47,8 +43,17 @@ class Grid:
         for block in self.state:
             shared = set()
             for cell in block.cells:
-                shared |= {neighbor for neighbor in cell.neighbors if neighbor.id != block.id}
+                shared |= {neighbor.id for neighbor in cell.neighbors if neighbor.id != block.id}
             block.neighbors = list(shared)
+
+    def load_colors(self):
+        max_neighbors = max(len(block.neighbors) for block in self.state)
+        num_colors = max_neighbors + 1; num_encodings = num_colors + 2
+        COLORS[:] = COLORS[:num_colors]
+        HIDDEN.encoding, NC.encoding = encode(k=1, n=num_encodings), encode(k=2, n=num_encodings)
+        for i, color in enumerate(COLORS, start=3):
+            color.encoding = encode(k=i, n=num_encodings)
+        self.reset()
     
     def load_space(self):
         for counter, (block, color) in enumerate(product(self.state, COLORS)):
@@ -60,15 +65,28 @@ class Grid:
         [block.set_color(HIDDEN) for block in self.state]
 
     def step(self):
-        reveal = random.randint(self.minR, int(self.minR + self.wR * self.num_blocks))
+        reveal = random.randint(self.minR, self.maxR)
         hidden_blocks = [block for block in self.state if block.is_hidden()]
         r = min(len(hidden_blocks), reveal)
         for block in random.sample(hidden_blocks, r):
             block.set_color(NC)
 
-    #TODO  
-    def apply(self, action):
-        pass
+    def apply(self, actions):
+        distinct = actions.former != actions.latter
+        for action in actions:
+            invalid = action.block.is_hidden()
+            action.set_flags(invalid=int(invalid), distinct=int(distinct))
+            action.apply() if distinct and not invalid else None
+
+    def reward(self, player):
+        player.reward = player.action.invalid * self.sanction
+        for id in player.action.block.neighbors:
+            neighbor = self.state[id]
+            if neighbor.color == player.action.color:
+                player.reward += self.penalty
+            else:
+                player.reward += self.gain
+        player.reward = player.action.distinct * player.reward
 
 class Cell:
     def __init__(self, row, col):
@@ -76,7 +94,7 @@ class Cell:
         self.col = col
         self.id = None
         self.color = HIDDEN
-        self.neighbors = []  # before merging cells
+        self.neighbors = []  # the initial 4 instances of class Cell
 
     def set_color(self, color):
         self.color = color
@@ -95,7 +113,7 @@ class Block:
         self.id = id
         self.color = HIDDEN
         self.cells = []
-        self.neighbors = []  # after merging cells
+        self.neighbors = []  # ids after merging cells
 
     def set_color(self, color):
         self.color = color
@@ -113,6 +131,21 @@ class Action:
         self.color = color
         self.id = None
         self.counter = {"explore": 0, "exploit": 0}
+        self.invalid = 0
+        self.distinct = 1
 
     def increment(self, phase):
         self.counter[phase] += 1
+
+    def set_flags(self, invalid, distinct):   # 0 means false 1 means true
+        self.invalid = invalid
+        self.distinct = distinct
+
+    def apply(self):
+        self.block.set_color(self.color)
+
+    def __eq__(self, other):
+        return isinstance(other, Action) and self.block == other.block and self.color == other.color
+    
+    def __ne__(self, other):
+        return not self.__eq__(other)
