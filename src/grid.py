@@ -82,19 +82,18 @@ class Grid:
 
         for action in actions_list:
             if not bool(action.invalid):
-                print(applied)
                 if distinct:
-                    action.apply()
+                    applied = action.apply()
                 elif applied:
-                    action = None
+                    action.applied = False
+
+                    ##################################################################################################################
+                    print(actions.former.applied, actions.former.block.id, actions.former.block.color.name, actions.former.color.name)
+                    print(actions.latter.applied, actions.latter.block.id, actions.latter.block.color.name, actions.latter.color.name)
+                    ##################################################################################################################
+
                 else:
-                    action.apply()
-                    applied = True
-        
-        ##########################################################################################
-        #print(actions.former.block.id, actions.former.block.color.name, actions.former.color.name)
-        #print(actions.latter.block.id, actions.latter.block.color.name, actions.latter.color.name)
-        ##########################################################################################
+                    applied = action.apply()
 
     def reward(self, player):
         k, m = 0, 0
@@ -156,12 +155,15 @@ class Action:
         self.id = None
         self.counter = {"explore": 0, "exploit": 0}
         self.invalid = 0  # 0 means false 1 means true
+        self.applied = False
 
     def increment(self, phase):
         self.counter[phase] += 1
 
     def apply(self):
         self.block.set_color(self.color)
+        self.applied = True
+        return self.applied
 
     def __eq__(self, other):
         return isinstance(other, Action) and self.block == other.block
