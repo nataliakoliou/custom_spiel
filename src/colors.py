@@ -5,11 +5,15 @@ class Color(ABC):
         self.rgb = rgb
         self.encoding = encoding
 
+    @property
+    def name(self):
+        return self.__class__.__name__
+
 class Hidden(Color):
     def __init__(self):
         super().__init__((40, 40, 40), None)
 
-class NC(Color):
+class NoColor(Color):
     def __init__(self):
         super().__init__((255, 255, 255), None)
 
@@ -55,4 +59,4 @@ class Teal(Color):
 
 COLORS = [Red(), Orange(), Yellow(), Green(), Blue(), Pink(), Violet(), Cyan(), Coral(), Teal()]
 HIDDEN=Hidden()
-NC=NC()
+NC=NoColor()

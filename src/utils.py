@@ -1,5 +1,3 @@
-import os
-import torch
 import random
 
 def get_size(struct):
@@ -18,9 +16,3 @@ def encode(k, n):
 def get_id(list, value):
     ids = [i for i, x in enumerate(list) if x == value]
     return random.choice(ids) if ids else None
-
-def save_model(self, player, repeat):
-    save_dir = f"{self.dir}/models"
-    os.makedirs(save_dir, exist_ok=True)
-    path = f"{save_dir}/repeat_{repeat}/{player.type}.pth"
-    torch.save(player.model.state_dict(), path)

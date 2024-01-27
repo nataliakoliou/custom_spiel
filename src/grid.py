@@ -16,7 +16,7 @@ class Grid:
 
     @property
     def maxR(self):
-        return int(self.minR + self.maxR * self.num_blocks)
+        return int(self.minR + self.wR * self.num_blocks)
 
     def load(self):
         self.load_cells()
@@ -70,23 +70,37 @@ class Grid:
         r = min(len(hidden_blocks), reveal)
         for block in random.sample(hidden_blocks, r):
             block.set_color(NC)
-
+    
     def apply(self, actions):
         distinct = actions.former != actions.latter
-        for action in actions:
-            invalid = action.block.is_hidden()
-            action.set_flags(invalid=int(invalid), distinct=int(distinct))
-            action.apply() if distinct and not invalid else None
+        actions_list = list(actions)
+        random.shuffle(actions_list)
+        applied = False
+        for action in actions_list:
+            invalid = action.block.is_hidden() or not action.block.is_uncolored()
+            action.invalid=int(invalid)
+            if not invalid:
+                if distinct:
+                    action.apply()
+                else:
+                    if applied:
+                        action = None
+                    else:
+                        action.apply()
+                        applied = True
+        print("former", (actions.former.block.id, actions.former.color.name))
+        print("latter", (actions.latter.block.id, actions.latter.color.name))
 
     def reward(self, player):
-        player.reward = player.action.invalid * self.sanction
+        k, m = 0, 0
         for id in player.action.block.neighbors:
             neighbor = self.state[id]
-            if neighbor.color == player.action.color:
-                player.reward += self.penalty
-            else:
-                player.reward += self.gain
-        player.reward = player.action.distinct * player.reward
+            k, m = (k + 1, m) if neighbor.color != player.action.color else (k, m + 1)
+        d = 0 if player.action is None else 1
+        s = player.action.invalid * player.sanction
+        g = k * player.gain
+        p = m * player.penalty
+        player.reward = d * (s + g + p)
 
 class Cell:
     def __init__(self, row, col):
@@ -106,7 +120,7 @@ class Cell:
         return isinstance(self.color, Hidden)
     
     def is_uncolored(self):
-        return isinstance(self.color, NC)
+        return isinstance(self.color, NoColor)
 
 class Block:
     def __init__(self, id):
@@ -123,7 +137,7 @@ class Block:
         return isinstance(self.color, Hidden)
     
     def is_uncolored(self):
-        return isinstance(self.color, NC)
+        return isinstance(self.color, NoColor)
     
 class Action:
     def __init__(self, block, color):
@@ -131,21 +145,16 @@ class Action:
         self.color = color
         self.id = None
         self.counter = {"explore": 0, "exploit": 0}
-        self.invalid = 0
-        self.distinct = 1
+        self.invalid = 0  # 0 means false 1 means true
 
     def increment(self, phase):
         self.counter[phase] += 1
-
-    def set_flags(self, invalid, distinct):   # 0 means false 1 means true
-        self.invalid = invalid
-        self.distinct = distinct
 
     def apply(self):
         self.block.set_color(self.color)
 
     def __eq__(self, other):
-        return isinstance(other, Action) and self.block == other.block and self.color == other.color
+        return isinstance(other, Action) and self.block == other.block
     
     def __ne__(self, other):
         return not self.__eq__(other)

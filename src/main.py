@@ -4,7 +4,7 @@ from game import *
 from grid import *
 from player import *
 
-########## TODO ##########
+############# TODO #############
 # 1) Replay Memory
 # 2) Batch Size
 # 3) Simulation
@@ -12,7 +12,8 @@ from player import *
 # 5) Colors Representation
 # 6) Code Structure
 # 7) Testers
-##########################
+# 8) State Input Representation
+################################
 
 env = Grid(
     rows=2, 
@@ -28,6 +29,7 @@ human = Player(
     criterion = nn.MSELoss(),
     optimizer="AdamW",
     lr=0.001,
+    gamma=0.9,
     weight_decay=1e-5,
     bG=+1,
     bP=-1,
@@ -40,6 +42,7 @@ robot = Player(
     criterion = nn.SmoothL1Loss(),
     optimizer="AdamW",
     lr=0.001,
+    gamma=0.9,
     weight_decay=1e-5,
     bG=+1,
     bP=-1,
@@ -48,18 +51,18 @@ robot = Player(
 
 game = Game(
     title="CGCP.1: Human-Robot",
-    repeats=10,
+    repeats=2,
     env=env,
     human=human,
     robot=robot,
-    gamma=0.9,
     epsilon=1,
     accuracy=4,
     dir=r"C:\Users\natalia\git-repos\custom_spiel"
     )
 
+###############################################################################################
 game.load()
-
+game.qlearning()
 
 """game.learn(dir=.../models/game1)
 #train human and robot models

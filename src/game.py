@@ -1,19 +1,19 @@
-from tqdm import tqdm
 from collections import namedtuple
 import numpy as np
+import sys
+import time
 from grid import *
 from player import *
 from colors import *
 from utils import *
 
 class Game:
-    def __init__(self, title, repeats, env, human, robot, gamma, epsilon, accuracy, dir):
+    def __init__(self, title, repeats, env, human, robot, epsilon, accuracy, dir):
         self.title = title
         self.repeats = repeats
         self.env = env
         self.human = human
         self.robot = robot
-        self.gamma = gamma
         self.epsilon = epsilon
         self.accuracy = accuracy
         self.dir = dir
@@ -23,6 +23,10 @@ class Game:
     @property
     def players(self):
         return [self.human, self.robot]
+    
+    @property
+    def active_players(self):
+        return [player for player in self.players if player.action is not None]
     
     @property
     def info(self):
@@ -37,56 +41,62 @@ class Game:
     def load(self):
 
         ########################
-        self.print_exploration()
-        self.print_decay()
-        self.print_dir()
+        #self.print_exploration()
+        #self.print_decay()
+        #self.print_dir()
         ########################
 
         self.env.load()
 
         #######################
-        self.print_num_blocks()
-        self.print_state()
+        #self.print_num_blocks()
+        #self.print_state()
         #######################
 
         self.human.load(self.info)
         self.robot.load(self.info)
 
         ####################
-        self.print_actions()
+        #self.print_actions()
         ####################
 
     def qlearning(self):
         steps = 0
-        for repeat in tqdm(range(self.repeats), desc='Q-Learning', total=self.repeats):
+        for repeat in range(self.repeats):
             self.env.reset()
-            pbar = tqdm(desc=f'Repeat {repeat + 1}/{self.repeats}')
+
+            ##################
+            #self.print_state()
+            ##################
 
             while not self.stage_over():
                 self.env.step()
+
+                ##################
+                #self.print_state()
+                ##################
 
                 for player in self.players:
                     if np.random.rand() < self.epsilon:
                         player.explore()
                     else:
-                        player.expoit()
+                        player.exploit()
 
                 self.env.apply(self.actions)
 
-                for player in self.players:
+                for player in self.active_players:
                     player.update(self.info)
                     self.env.reward(player)
                     player.optimize()
-                    player.save_model(repeat) if (repeat+1) % 2 == 0 else None
+                    player.save_model(self.dir, repeat) if (repeat+1) % 2 == 0 else None
 
                 steps += 1
                 self.epsilon = max(round(self.epsilon - self.decay, self.accuracy), 0) 
-
-                pbar.set_postfix({'Human Loss': '{0:.3f}'.format(self.human.L/steps),
-                                  'Robot Loss': '{0:.3f}'.format(self.robot.L/steps),
-                                  'Human Reward': '{0:.3f}'.format(self.human.R/steps),
-                                  'Robot Reward': '{0:.3f}'.format(self.robot.R/steps)})
-
+                sys.stdout.write('\rRepeat: %d, Steps: %d, Human Loss: %.3f, Robot Loss: %.3f, Human Reward: %.3f, Robot Reward: %.3f'
+                             % (repeat + 1, steps, self.human.L / steps, self.robot.L / steps, self.human.R / steps, self.robot.R / steps))
+                sys.stdout.flush()
+                time.sleep(1)
+                
     def stage_over(self):
         for block in self.env.state:
             if block.is_hidden() or block.is_uncolored():
@@ -101,10 +111,10 @@ class Game:
     def print_actions(self):
         print()
         print("Human Action Space:")
-        for action in self.human.space: print(f"Action {action.id}:", (action.block.id, action.color.__class__.__name__, action.counter, action.invalid, action.distinct))
+        for action in self.human.space: print(f"Action {action.id}:", (action.block.id, action.color.__class__.__name__, action.counter, action.invalid))
         print()
         print("Robot Action Space:")
-        for action in self.robot.space: print(f"Action {action.id}:", (action.block.id, action.color.__class__.__name__, action.counter, action.invalid, action.distinct))
+        for action in self.robot.space: print(f"Action {action.id}:", (action.block.id, action.color.__class__.__name__, action.counter, action.invalid))
 
     def print_colors(self):
         print()
@@ -115,7 +125,6 @@ class Game:
         print()
         print("State:")
         for block in self.env.state: print(f"Block {block.id}:", (block.id, block.color.__class__.__name__, len(block.cells), block.neighbors))
-        self.print_colors()
 
     def print_num_blocks(self):
         print()

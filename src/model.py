@@ -3,9 +3,10 @@ import numpy as np
 import torch
 
 class DQN(nn.Module):
-    def __init__(self, in_channels, output):
+    def __init__(self, input, output):
+        self.input = input
         super(DQN, self).__init__()
-        self.fc1 = nn.Linear(in_channels, 64)
+        self.fc1 = nn.Linear(input, 64)
         self.fc2 = nn.Linear(64, 128)             
         self.fc3 = nn.Linear(128, output)  # output_size = num_blocks * num_colors
         self.relu = nn.ReLU()

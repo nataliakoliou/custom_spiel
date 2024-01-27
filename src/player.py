@@ -6,12 +6,13 @@ from model import *
 from utils import *
 
 class Player:
-    def __init__(self, type, model, criterion, optimizer, lr, weight_decay, bG, bP, wS):
+    def __init__(self, type, model, criterion, optimizer, lr, gamma, weight_decay, bG, bP, wS):
         self.type = type
         self.model = model
         self.criterion = criterion
         self.optimizer = optimizer
         self.lr = lr
+        self.gamma = gamma
         self.weight_decay = weight_decay
         self.bG = bG
         self.bP = bP
@@ -42,11 +43,15 @@ class Player:
     @property
     def estimates(self):
         return self.model(self.state)
+    
+    @property
+    def features(self):
+        return len(self.space)+ 2*len(self.state)
 
     def load(self, info):
         self.space = info.space
         self.state = info.state
-        self.model = globals()[self.model](in_channels=1, output=len(self.space))
+        self.model = globals()[self.model](input=self.features, output=len(self.space))
         self.optimizer = getattr(optim, self.optimizer)(
             self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
 
@@ -68,15 +73,17 @@ class Player:
 
     def optimize(self):
         target = self.reward + self.gamma * max(self.estimates)
-        self.loss = self.criterion(self.q, target)
+        q = torch.tensor(self.q, requires_grad=True)
+        t = torch.tensor(target, requires_grad=False)
+        self.loss = self.criterion(q, t)
         self.optimizer.zero_grad()
         self.loss.backward()
         self.optimizer.step()
         self.R += self.reward
         self.L += self.loss
 
-    def save_model(self, repeat):
-        save_dir = f"{self.dir}/models"
+    def save_model(self, dir, repeat):
+        save_dir = os.path.join(dir, "models", f"repeat_{repeat}")
         os.makedirs(save_dir, exist_ok=True)
-        path = f"{save_dir}/repeat_{repeat}/{self.type}.pth"
+        path = os.path.join(save_dir, f"{self.type}.pth")
         torch.save(self.model.state_dict(), path)
