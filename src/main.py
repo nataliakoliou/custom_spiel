@@ -16,8 +16,8 @@ from player import *
 ################################
 
 env = Grid(
-    rows=2, 
-    cols=2, 
+    rows=3, 
+    cols=3, 
     merge=0.2,
     minR=2,
     wR=0.2
@@ -33,7 +33,7 @@ human = Player(
     weight_decay=1e-5,
     bG=+1,
     bP=-1,
-    wS=-3
+    wS=-10
     )
 
 robot = Player(
@@ -46,17 +46,18 @@ robot = Player(
     weight_decay=1e-5,
     bG=+1,
     bP=-1,
-    wS=-3
+    wS=-10
     )
 
 game = Game(
     title="CGCP.1: Human-Robot",
-    repeats=2,
+    repeats=1000,
     env=env,
     human=human,
     robot=robot,
     epsilon=1,
     accuracy=4,
+    saves=5,
     dir=r"C:\Users\natalia\git-repos\custom_spiel"
     )
 

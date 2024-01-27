@@ -76,20 +76,25 @@ class Grid:
         actions_list = list(actions)
         random.shuffle(actions_list)
         applied = False
+
+        for action in actions:
+            action.invalid=int(not action.block.is_uncolored())
+
         for action in actions_list:
-            invalid = action.block.is_hidden() or not action.block.is_uncolored()
-            action.invalid=int(invalid)
-            if not invalid:
+            if not bool(action.invalid):
+                print(applied)
                 if distinct:
                     action.apply()
+                elif applied:
+                    action = None
                 else:
-                    if applied:
-                        action = None
-                    else:
-                        action.apply()
-                        applied = True
-        print("former", (actions.former.block.id, actions.former.color.name))
-        print("latter", (actions.latter.block.id, actions.latter.color.name))
+                    action.apply()
+                    applied = True
+        
+        ##########################################################################################
+        #print(actions.former.block.id, actions.former.block.color.name, actions.former.color.name)
+        #print(actions.latter.block.id, actions.latter.block.color.name, actions.latter.color.name)
+        ##########################################################################################
 
     def reward(self, player):
         k, m = 0, 0
@@ -100,6 +105,11 @@ class Grid:
         s = player.action.invalid * player.sanction
         g = k * player.gain
         p = m * player.penalty
+        
+        ###################################################
+        #print(player.gain, player.penalty, player.sanction)
+        ###################################################
+
         player.reward = d * (s + g + p)
 
 class Cell:
@@ -120,7 +130,7 @@ class Cell:
         return isinstance(self.color, Hidden)
     
     def is_uncolored(self):
-        return isinstance(self.color, NoColor)
+        return isinstance(self.color, White)
 
 class Block:
     def __init__(self, id):
@@ -137,7 +147,7 @@ class Block:
         return isinstance(self.color, Hidden)
     
     def is_uncolored(self):
-        return isinstance(self.color, NoColor)
+        return isinstance(self.color, White)
     
 class Action:
     def __init__(self, block, color):

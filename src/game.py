@@ -8,17 +8,19 @@ from colors import *
 from utils import *
 
 class Game:
-    def __init__(self, title, repeats, env, human, robot, epsilon, accuracy, dir):
+    def __init__(self, title, repeats, env, human, robot, epsilon, accuracy, saves, dir):
         self.title = title
         self.repeats = repeats
         self.env = env
         self.human = human
         self.robot = robot
         self.epsilon = epsilon
-        self.accuracy = accuracy
+        self.acc = accuracy
+        self.saves = saves
         self.dir = dir
-        self.explore = int(0.9 * repeats * env.rows * env.cols)
+        self.explore = int(0.9 * repeats)
         self.decay = round(1/self.explore, accuracy)
+        self.freq = round(repeats/saves)
 
     @property
     def players(self):
@@ -79,8 +81,17 @@ class Game:
                 for player in self.players:
                     if np.random.rand() < self.epsilon:
                         player.explore()
+
+                        ###########################################################################
+                        #print(player.type, ":", (player.action.block.id, player.action.color.name))
+                        ###########################################################################
+
                     else:
                         player.exploit()
+
+                        ###########################################################################
+                        #print(player.type, ":", (player.action.block.id, player.action.color.name))
+                        ###########################################################################
 
                 self.env.apply(self.actions)
 
@@ -88,14 +99,12 @@ class Game:
                     player.update(self.info)
                     self.env.reward(player)
                     player.optimize()
-                    player.save_model(self.dir, repeat) if (repeat+1) % 2 == 0 else None
+                    player.save_model(self.dir, repeat) if repeat % self.freq == 0 else None
 
                 steps += 1
-                self.epsilon = max(round(self.epsilon - self.decay, self.accuracy), 0) 
-                sys.stdout.write('\rRepeat: %d, Steps: %d, Human Loss: %.3f, Robot Loss: %.3f, Human Reward: %.3f, Robot Reward: %.3f'
-                             % (repeat + 1, steps, self.human.L / steps, self.robot.L / steps, self.human.R / steps, self.robot.R / steps))
-                sys.stdout.flush()
-                time.sleep(1)
+                #self.display_status(repeat, steps, delay=0)
+
+            self.epsilon = max(round(self.epsilon - self.decay, self.acc), 0)
                 
     def stage_over(self):
         for block in self.env.state:
@@ -103,6 +112,13 @@ class Game:
                 return False
         return True
     
+    def display_status(self, repeat, steps, delay=0):
+        f = '\rRepeat: {}, Steps: {} | Loss: (h={:.3f}, r={:.3f}), Reward: (h={:.3f}, r={:.3f})'
+        sys.stdout.write(f.format(repeat + 1, steps, self.human.L / steps, self.robot.L / steps,
+                                    self.human.R / steps, self.robot.R / steps))
+        sys.stdout.flush()
+        time.sleep(delay)
+
     def simulate(self, dir):
         pass
 
