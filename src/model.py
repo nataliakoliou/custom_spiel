@@ -4,7 +4,7 @@ import torch
 
 
 class DQN1(nn.Module):
-    def __init__(self, in_channels, input, output):
+    def __init__(self, _, input, output):
         super(DQN1, self).__init__()
         self.fc1 = nn.Linear(input, 64)
         self.fc2 = nn.Linear(64, 128)             

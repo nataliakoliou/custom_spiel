@@ -91,7 +91,7 @@ class Grid:
                     ##################################################################################################################
                 else:
                     applied = action.apply()
-    """
+                    
     def reward(self, player):
         k, m = 0, 0
         for id in player.action.block.neighbors:
@@ -110,10 +110,11 @@ class Grid:
         ###########################################################################################################
         #print(player.reward, bool(player.action.invalid), player.action.color.name, player.action.block.color.name)
         ###########################################################################################################
-    """
 
+    """
     def reward(self, player):
         player.reward = player.sanction if bool(player.action.invalid) else player.gain
+    """
 
 class Cell:
     def __init__(self, row, col):

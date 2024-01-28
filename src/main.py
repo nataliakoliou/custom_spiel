@@ -27,26 +27,26 @@ human = Player(
     type="human",
     model="DQN2",
     criterion = nn.SmoothL1Loss(),
-    optimizer="Adam",
+    optimizer="AdamW",
     lr=0.0005,
     gamma=0.9,
     weight_decay=1e-5,
-    bG=+10,
+    bG=+1,
     bP=-1,
-    wS=-100
+    wS=-10
     )
 
 robot = Player(
     type="robot",
     model="DQN2",
     criterion = nn.SmoothL1Loss(),
-    optimizer="Adam",
+    optimizer="AdamW",
     lr=0.0005,
     gamma=0.9,
     weight_decay=1e-5,
-    bG=+10,
+    bG=+1,
     bP=-1,
-    wS=-100
+    wS=-10
     )
 
 game = Game(

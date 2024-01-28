@@ -33,14 +33,14 @@ class Player:
     @property
     def penalty(self):
         suboptimal = len(self.action.block.neighbors) - 1
-        #return self.bP - suboptimal * self.gain
-        return self.bP
+        return self.bP - suboptimal * self.gain
+        #return self.bP
     
     @property
     def sanction(self):
         optimal = len(self.action.block.neighbors)
-        #return self.wS * optimal * self.gain
-        return self.wS
+        return self.wS * optimal * self.gain
+        #return self.wS
 
     @property
     def estimates(self):
