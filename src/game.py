@@ -1,5 +1,6 @@
 from collections import namedtuple
 import numpy as np
+import keyboard
 import sys
 import time
 from grid import *
@@ -92,19 +93,31 @@ class Game:
                         ###########################################################################
                         #print(player.type, ":", (player.action.block.id, player.action.color.name))
                         ###########################################################################
+                
+                if keyboard.is_pressed('esc'):
+                    print("User pressed the 'esc' key. Exiting the loop.")
+                    #self.print_state()
+                    print(self.human.action.applied, self.human.action.block.id, self.human.action.block.color.name, self.human.action.color.name)
+                    print(self.robot.action.applied, self.robot.action.block.id, self.robot.action.block.color.name, self.robot.action.color.name)
+                    break
 
                 self.env.apply(self.actions)
 
                 for player in self.active_players:
                     player.update(self.info)
-                    self.env.reward(player)
-                    player.optimize()
+                    if player.action.applied:
+                        self.env.reward(player)
+                        player.optimize()
                     player.save_model(self.dir, repeat) if repeat % self.freq == 0 else None
 
                 steps += 1
-                #self.display_status(repeat, steps, delay=0)
+                self.display_status(repeat, steps, delay=0)
 
             self.epsilon = max(round(self.epsilon - self.decay, self.acc), 0)
+
+        #self.print_state()
+        #print(self.human.action.applied, self.human.action.block.id, self.human.action.block.color.name, self.human.action.color.name)
+        #print(self.robot.action.applied, self.robot.action.block.id, self.robot.action.block.color.name, self.robot.action.color.name)
                 
     def stage_over(self):
         for block in self.env.state:

@@ -16,8 +16,8 @@ from player import *
 ################################
 
 env = Grid(
-    rows=3, 
-    cols=3, 
+    rows=1, 
+    cols=2, 
     merge=0.2,
     minR=2,
     wR=0.2
@@ -25,28 +25,28 @@ env = Grid(
 
 human = Player(
     type="human",
-    model="DQN",
-    criterion = nn.MSELoss(),
-    optimizer="AdamW",
-    lr=0.001,
+    model="DQN2",
+    criterion = nn.SmoothL1Loss(),
+    optimizer="Adam",
+    lr=0.0005,
     gamma=0.9,
     weight_decay=1e-5,
-    bG=+1,
+    bG=+10,
     bP=-1,
-    wS=-10
+    wS=-100
     )
 
 robot = Player(
     type="robot",
-    model="DQN",
+    model="DQN2",
     criterion = nn.SmoothL1Loss(),
-    optimizer="AdamW",
-    lr=0.001,
+    optimizer="Adam",
+    lr=0.0005,
     gamma=0.9,
     weight_decay=1e-5,
-    bG=+1,
+    bG=+10,
     bP=-1,
-    wS=-10
+    wS=-100
     )
 
 game = Game(

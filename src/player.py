@@ -33,12 +33,14 @@ class Player:
     @property
     def penalty(self):
         suboptimal = len(self.action.block.neighbors) - 1
-        return self.bP - suboptimal * self.gain
+        #return self.bP - suboptimal * self.gain
+        return self.bP
     
     @property
     def sanction(self):
         optimal = len(self.action.block.neighbors)
-        return self.wS * optimal * self.gain
+        #return self.wS * optimal * self.gain
+        return self.wS
 
     @property
     def estimates(self):
@@ -51,7 +53,7 @@ class Player:
     def load(self, info):
         self.space = info.space
         self.state = info.state
-        self.model = globals()[self.model](input=self.features, output=len(self.space))
+        self.model = globals()[self.model](in_channels=1, input=self.features, output=len(self.space))
         self.optimizer = getattr(optim, self.optimizer)(
             self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
 

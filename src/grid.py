@@ -73,12 +73,11 @@ class Grid:
     
     def apply(self, actions):
         distinct = actions.former != actions.latter
+        [action.set_invalid() for action in actions]
+
         actions_list = list(actions)
         random.shuffle(actions_list)
         applied = False
-
-        for action in actions:
-            action.invalid=int(not action.block.is_uncolored())
 
         for action in actions_list:
             if not bool(action.invalid):
@@ -86,21 +85,18 @@ class Grid:
                     applied = action.apply()
                 elif applied:
                     action.applied = False
-
                     ##################################################################################################################
-                    print(actions.former.applied, actions.former.block.id, actions.former.block.color.name, actions.former.color.name)
-                    print(actions.latter.applied, actions.latter.block.id, actions.latter.block.color.name, actions.latter.color.name)
+                    #print(actions.former.applied, actions.former.block.id, actions.former.block.color.name, actions.former.color.name)
+                    #print(actions.latter.applied, actions.latter.block.id, actions.latter.block.color.name, actions.latter.color.name)
                     ##################################################################################################################
-
                 else:
                     applied = action.apply()
-
+    """
     def reward(self, player):
         k, m = 0, 0
         for id in player.action.block.neighbors:
             neighbor = self.state[id]
             k, m = (k + 1, m) if neighbor.color != player.action.color else (k, m + 1)
-        d = 0 if player.action is None else 1
         s = player.action.invalid * player.sanction
         g = k * player.gain
         p = m * player.penalty
@@ -109,7 +105,15 @@ class Grid:
         #print(player.gain, player.penalty, player.sanction)
         ###################################################
 
-        player.reward = d * (s + g + p)
+        player.reward = s + g + p
+
+        ###########################################################################################################
+        #print(player.reward, bool(player.action.invalid), player.action.color.name, player.action.block.color.name)
+        ###########################################################################################################
+    """
+
+    def reward(self, player):
+        player.reward = player.sanction if bool(player.action.invalid) else player.gain
 
 class Cell:
     def __init__(self, row, col):
@@ -156,6 +160,9 @@ class Action:
         self.counter = {"explore": 0, "exploit": 0}
         self.invalid = 0  # 0 means false 1 means true
         self.applied = False
+
+    def set_invalid(self):
+        self.invalid = int(not self.block.is_uncolored())
 
     def increment(self, phase):
         self.counter[phase] += 1
