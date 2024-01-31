@@ -1,7 +1,7 @@
 import random
 from itertools import product, chain
-from colors import *
-from utils import *
+#from colors import *
+#from utils import *
 
 class Grid:
     def __init__(self, rows, cols, merge, minR, wR):
@@ -80,15 +80,12 @@ class Grid:
         applied = False
 
         for action in actions_list:
+            action.applied = True
             if not bool(action.invalid):
                 if distinct:
                     applied = action.apply()
                 elif applied:
                     action.applied = False
-                    ##################################################################################################################
-                    #print(actions.former.applied, actions.former.block.id, actions.former.block.color.name, actions.former.color.name)
-                    #print(actions.latter.applied, actions.latter.block.id, actions.latter.block.color.name, actions.latter.color.name)
-                    ##################################################################################################################
                 else:
                     applied = action.apply()
                     
@@ -100,21 +97,11 @@ class Grid:
         s = player.action.invalid * player.sanction
         g = k * player.gain
         p = m * player.penalty
-        
-        ###################################################
-        #print(player.gain, player.penalty, player.sanction)
-        ###################################################
-
-        player.reward = s + g + p
+        player.reward = s + g + p if player.action.applied else 0
 
         ###########################################################################################################
         #print(player.reward, bool(player.action.invalid), player.action.color.name, player.action.block.color.name)
         ###########################################################################################################
-
-    """
-    def reward(self, player):
-        player.reward = player.sanction if bool(player.action.invalid) else player.gain
-    """
 
 class Cell:
     def __init__(self, row, col):
@@ -158,15 +145,11 @@ class Action:
         self.block = block
         self.color = color
         self.id = None
-        self.counter = {"explore": 0, "exploit": 0}
         self.invalid = 0  # 0 means false 1 means true
         self.applied = False
 
     def set_invalid(self):
         self.invalid = int(not self.block.is_uncolored())
-
-    def increment(self, phase):
-        self.counter[phase] += 1
 
     def apply(self):
         self.block.set_color(self.color)

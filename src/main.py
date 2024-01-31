@@ -1,52 +1,58 @@
 import torch.nn as nn
+from google.colab import drive
+#from game import *
+#from grid import *
+#from player import *
 
-from game import *
-from grid import *
-from player import *
+drive.mount('/content/drive')
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 ############# TODO #############
-# 1) Replay Memory
-# 2) Batch Size
-# 3) Simulation
-# 4) Model Architecture
-# 5) Colors Representation
-# 6) Code Structure
-# 7) Testers
-# 8) State Input Representation
+#  Fine-tune parameters
+#  Loss graphs
+#  Cuda device
+#  Get statistics for type/action combination
+#  Simulation
+#  Show colored grid during simulation
+#  Continue training from trained models
 ################################
 
 env = Grid(
-    rows=1, 
+    rows=2, 
     cols=2, 
-    merge=0.2,
+    merge=0.1,
     minR=2,
     wR=0.2
     )
 
 human = Player(
     type="human",
-    model="DQN2",
+    model="DQN1",
     criterion = nn.SmoothL1Loss(),
     optimizer="AdamW",
-    lr=0.0005,
+    lr=0.001,
+    tau=0.005,
+    batch_size=128,
     gamma=0.9,
     weight_decay=1e-5,
-    bG=+1,
-    bP=-1,
-    wS=-10
+    gain=+1,
+    penalty=-2,
+    sanction=-10
     )
 
 robot = Player(
     type="robot",
-    model="DQN2",
+    model="DQN1",
     criterion = nn.SmoothL1Loss(),
     optimizer="AdamW",
-    lr=0.0005,
+    lr=0.001,
+    tau=0.005,
+    batch_size=128,
     gamma=0.9,
     weight_decay=1e-5,
-    bG=+1,
-    bP=-1,
-    wS=-10
+    gain=+1,
+    penalty=-2,
+    sanction=-10
     )
 
 game = Game(
@@ -58,7 +64,7 @@ game = Game(
     epsilon=1,
     accuracy=4,
     saves=5,
-    dir=r"C:\Users\natalia\git-repos\custom_spiel"
+    dir='/content/drive/MyDrive/custom_spiel'
     )
 
 ###############################################################################################

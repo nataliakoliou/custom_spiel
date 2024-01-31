@@ -1,12 +1,14 @@
 from collections import namedtuple
+import matplotlib.pyplot as plt
 import numpy as np
-import keyboard
 import sys
+import torch
 import time
-from grid import *
-from player import *
-from colors import *
-from utils import *
+import os
+#from grid import *
+#from player import *
+#from colors import *
+#from utils import *
 
 class Game:
     def __init__(self, title, repeats, env, human, robot, epsilon, accuracy, saves, dir):
@@ -19,17 +21,14 @@ class Game:
         self.acc = accuracy
         self.saves = saves
         self.dir = dir
-        self.explore = int(0.9 * repeats)
+        self.explore = int(0.98 * repeats)
         self.decay = round(1/self.explore, accuracy)
         self.freq = round(repeats/saves)
+        self.losses = {'human': [], 'robot': []}
 
     @property
     def players(self):
         return [self.human, self.robot]
-    
-    @property
-    def active_players(self):
-        return [player for player in self.players if player.action is not None]
     
     @property
     def info(self):
@@ -68,10 +67,6 @@ class Game:
         for repeat in range(self.repeats):
             self.env.reset()
 
-            ##################
-            #self.print_state()
-            ##################
-
             while not self.stage_over():
                 self.env.step()
 
@@ -93,31 +88,31 @@ class Game:
                         ###########################################################################
                         #print(player.type, ":", (player.action.block.id, player.action.color.name))
                         ###########################################################################
-                
-                if keyboard.is_pressed('esc'):
-                    print("User pressed the 'esc' key. Exiting the loop.")
-                    #self.print_state()
-                    print(self.human.action.applied, self.human.action.block.id, self.human.action.block.color.name, self.human.action.color.name)
-                    print(self.robot.action.applied, self.robot.action.block.id, self.robot.action.block.color.name, self.robot.action.color.name)
-                    break
 
                 self.env.apply(self.actions)
 
-                for player in self.active_players:
-                    player.update(self.info)
-                    if player.action.applied:
-                        self.env.reward(player)
-                        player.optimize()
-                    player.save_model(self.dir, repeat) if repeat % self.freq == 0 else None
+                for player in self.players:
+                    player.update(self.info, type="next")
+                    self.env.reward(player)
+                    player.expand_memory()
+                    player.update(self.info, type="current")
+                    player.optimize()
+                    player.update(self.info, type="net")
 
                 steps += 1
                 self.display_status(repeat, steps, delay=0)
 
+            for type in ['human', 'robot']:
+                player = getattr(self, type)
+                self.save_model(player, repeat) if repeat % self.freq == 0 else None
+                self.losses[type].append(player.L / steps)
             self.epsilon = max(round(self.epsilon - self.decay, self.acc), 0)
 
-        #self.print_state()
-        #print(self.human.action.applied, self.human.action.block.id, self.human.action.block.color.name, self.human.action.color.name)
-        #print(self.robot.action.applied, self.robot.action.block.id, self.robot.action.block.color.name, self.robot.action.color.name)
+        self.graph_losses()
+
+        self.print_state()
+        print(self.human.action.applied, self.human.action.block.id, self.human.action.block.color.name, self.human.action.color.name)
+        print(self.robot.action.applied, self.robot.action.block.id, self.robot.action.block.color.name, self.robot.action.color.name)
                 
     def stage_over(self):
         for block in self.env.state:
@@ -125,10 +120,29 @@ class Game:
                 return False
         return True
     
+    def save_model(self, player, repeat):
+        save_dir = os.path.join(self.dir, "models", f"repeat_{repeat}")
+        os.makedirs(save_dir, exist_ok=True)
+        path = os.path.join(save_dir, f"{player.type}.pth")
+        torch.save(player.policy_net.state_dict(), path)
+    
+    def graph_losses(self):
+        plt.figure(figsize=(10, 6))
+        plt.plot(self.losses['human'], label='Human Loss', color='red')
+        plt.plot(self.losses['robot'], label='Robot Loss', color='blue')
+        plt.title('Training Losses')
+        plt.xlabel('Steps')
+        plt.ylabel('Loss')
+        plt.legend()
+        plt.grid(True)
+        save_dir = os.path.join(self.dir, 'static')
+        os.makedirs(save_dir, exist_ok=True)
+        path = os.path.join(save_dir, 'losses.png')
+        plt.savefig(path)
+    
     def display_status(self, repeat, steps, delay=0):
-        f = '\rRepeat: {}, Steps: {} | Loss: (h={:.3f}, r={:.3f}), Reward: (h={:.3f}, r={:.3f})'
-        sys.stdout.write(f.format(repeat + 1, steps, self.human.L / steps, self.robot.L / steps,
-                                    self.human.R / steps, self.robot.R / steps))
+        f = '\rRepeat: {}, Steps: {} | Loss: (h={:.3f}, r={:.3f})'
+        sys.stdout.write(f.format(repeat + 1, steps, self.human.L/steps, self.robot.L/steps))
         sys.stdout.flush()
         time.sleep(delay)
 
