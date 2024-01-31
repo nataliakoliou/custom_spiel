@@ -9,8 +9,6 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 ############# TODO #############
 #  Fine-tune parameters
-#  Loss graphs
-#  Cuda device
 #  Get statistics for type/action combination
 #  Simulation
 #  Show colored grid during simulation
