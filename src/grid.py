@@ -11,7 +11,7 @@ class Grid:
         self.minR = minR
         self.wR = wR
         self.grid = [[Cell(i, j) for j in range(cols)] for i in range(rows)]
-        self.state, self.space = [], []
+        self.state = []
         self.num_blocks = 0
 
     @property
@@ -22,7 +22,6 @@ class Grid:
         self.load_cells()
         self.load_state()
         self.load_colors()
-        self.load_space()
 
     def load_cells(self):
         for i, j in product(range(self.rows), range(self.cols)):
@@ -54,12 +53,6 @@ class Grid:
         for i, color in enumerate(COLORS, start=3):
             color.encoding = encode(k=i, n=num_encodings)
         self.reset()
-    
-    def load_space(self):
-        for counter, (block, color) in enumerate(product(self.state, COLORS)):
-            action = Action(block, color)
-            action.id = counter
-            self.space.append(action)
 
     def reset(self):
         [block.set_color(HIDDEN) for block in self.state]
@@ -73,21 +66,31 @@ class Grid:
     
     def apply(self, actions):
         distinct = actions.former != actions.latter
-        [action.set_invalid() for action in actions]
-
         actions_list = list(actions)
         random.shuffle(actions_list)
-        applied = False
-
+        _loser = False
         for action in actions_list:
-            action.applied = True
+            action.set_invalid()
+            action.winner = True
             if not bool(action.invalid):
-                if distinct:
-                    applied = action.apply()
-                elif applied:
-                    action.applied = False
+                if distinct or not _loser:
+                    self.state[action.block.id].set_color(action.color)
+                    action.winner = True
+                    _loser = True  # sets the next action to "loser"
                 else:
-                    applied = action.apply()
+                    action.winner = False
+
+            """ # EQUIVALENT!!!
+            if distinct:
+                self.state[action.block.id].set_color(action.color)
+                action.winner = True
+                _loser = True
+            elif _loser:
+                action.winner = False
+            else:
+                self.state[action.block.id].set_color(action.color)
+                action.winner = True
+                _loser = True """
                     
     def reward(self, player):
         k, m = 0, 0
@@ -97,7 +100,7 @@ class Grid:
         s = player.action.invalid * player.sanction
         g = k * player.gain
         p = m * player.penalty
-        player.reward = s + g + p if player.action.applied else 0
+        player.reward = s + g + p if player.action.winner else 0
 
         ###########################################################################################################
         #print(player.reward, bool(player.action.invalid), player.action.color.name, player.action.block.color.name)
@@ -140,24 +143,5 @@ class Block:
     def is_uncolored(self):
         return isinstance(self.color, White)
     
-class Action:
-    def __init__(self, block, color):
-        self.block = block
-        self.color = color
-        self.id = None
-        self.invalid = 0  # 0 means false 1 means true
-        self.applied = False
-
-    def set_invalid(self):
-        self.invalid = int(not self.block.is_uncolored())
-
-    def apply(self):
-        self.block.set_color(self.color)
-        self.applied = True
-        return self.applied
-
     def __eq__(self, other):
-        return isinstance(other, Action) and self.block == other.block
-    
-    def __ne__(self, other):
-        return not self.__eq__(other)
+        return isinstance(other, Block) and self.id == other.id

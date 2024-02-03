@@ -1,3 +1,4 @@
+import os
 import random
 
 def get_size(struct):
@@ -16,3 +17,9 @@ def encode(k, n):
 def get_id(list, value):
     ids = [i for i, x in enumerate(list) if x == value]
     return random.choice(ids) if ids else None
+
+def get_path(dir, folder, name):
+    folder = folder if isinstance(folder, tuple) else (folder,)
+    save_dir = os.path.join(dir, *folder)
+    os.makedirs(save_dir, exist_ok=True)
+    return os.path.join(save_dir, name)

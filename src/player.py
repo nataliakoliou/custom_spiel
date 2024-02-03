@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 import random
+from itertools import product
+from copy import deepcopy
 import torch.optim as optim
 from collections import namedtuple, deque
 #from model import *
@@ -21,7 +23,7 @@ class ReplayMemory(object):
         return len(self.memory)
 
 class Player:
-    def __init__(self, type, model, criterion, optimizer, lr, tau, batch_size, gamma, weight_decay, gain, penalty, sanction):
+    def __init__(self, type, model, criterion, optimizer, lr, tau, batch_size, gamma, weight_decay, gain, penalty, sanction, device):
         self.type = type
         self.model = model
         self.criterion = criterion
@@ -34,6 +36,7 @@ class Player:
         self.gain = gain
         self.penalty = penalty
         self.sanction = sanction
+        self.device = device
         self.memory = ReplayMemory(10000)
         self.policy_net = None
         self.target_net = None
@@ -49,22 +52,30 @@ class Player:
     @property
     def features(self):
         return len(self.space)+ 2*len(self.state)  # num_blocks * num_all_colors
+    
+    def statistics(self, phase):
+        return sorted(self.space, key=lambda action: action.times[phase], reverse=True)
 
-    def load(self, info):
-        self.space = info.space
-        self.state = info.state
-        self.policy_net = globals()[self.model](input=self.features, output=len(self.space))
-        self.target_net = globals()[self.model](input=self.features, output=len(self.space))
+    def load(self, data):
+        self.update("current", data)
+        for counter, (block, color) in enumerate(product(self.state, COLORS)):
+            action = Action(block, color)
+            action.id = counter
+            self.space.append(action)
+        self.policy_net = globals()[self.model](input=self.features, output=len(self.space)).to(self.device)
+        self.target_net = globals()[self.model](input=self.features, output=len(self.space)).to(self.device)
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.optimizer = getattr(optim, self.optimizer)(
             self.policy_net.parameters(), lr=self.lr, weight_decay=self.weight_decay)
 
-    def update(self, info, type):
-        if type=="current":
-            self.state = info.state 
-        elif type=="next":
-            self.next = info.state
-        elif type=="net":  # Soft update of the target network's weights: θ′ ← τ θ + (1 −τ )θ′
+    def update(self, type, data=None):
+        if type == "current":
+            self.state = deepcopy(data)
+            for action in self.space:
+                action.block = self.state[action.block.id]
+        elif type == "next":
+            self.next = deepcopy(data)
+        elif type == "net":  # Soft update of the target network's weights: θ′ ← τθ + (1−τ)θ′
             tnsd = self.target_net.state_dict()
             pnsd = self.policy_net.state_dict()
             for key in pnsd:
@@ -76,14 +87,16 @@ class Player:
     def explore(self):
         self.action = random.choice(self.space)
         with torch.no_grad():
-            s = torch.tensor([[block.color.encoding for block in self.state]], dtype=torch.float32)
+            s = torch.tensor([[block.color.encoding for block in self.state]], dtype=torch.float32).to(self.device)
             self.q = self.policy_net(s)[0, self.action.id].item()
+        self.action.increment("Exploration")
 
     def exploit(self):
         with torch.no_grad():
-            s = torch.tensor([[block.color.encoding for block in self.state]], dtype=torch.float32)
+            s = torch.tensor([[block.color.encoding for block in self.state]], dtype=torch.float32).to(self.device)
             self.q, id  = self.policy_net(s).max(1)
         self.action = self.space[id]
+        self.action.increment("Exploitation")
 
         # tensor([[0.2333, 0.2827]]).max(1) returns:
         # torch.return_types.max(
@@ -92,10 +105,10 @@ class Player:
         # )
 
     def expand_memory(self):
-        s = torch.tensor([[block.color.encoding for block in self.state]], dtype=torch.float32)  # [ [[0 1 0 0], ... , [0 0 1 0]] ]
-        a = torch.tensor([[self.action.id]])  # [[1]]
-        n = torch.tensor([[block.color.encoding for block in self.next]], dtype=torch.float32)  # [ [[0 1 0 0], ... , [0 0 1 0]] ]
-        r = torch.tensor([self.reward])  # [25]
+        s = torch.tensor([[block.color.encoding for block in self.state]], dtype=torch.float32).to(self.device)  # [ [[0 1 0 0], ... , [0 0 1 0]] ]
+        a = torch.tensor([[self.action.id]]).to(self.device)  # [[1]]
+        n = torch.tensor([[block.color.encoding for block in self.next]], dtype=torch.float32).to(self.device)  # [ [[0 1 0 0], ... , [0 0 1 0]] ]
+        r = torch.tensor([self.reward]).to(self.device)  # [25]
         self.memory.push(s, a, n, r)
 
     def optimize(self):
@@ -116,9 +129,30 @@ class Player:
         transitions = self.memory.sample(self.batch_size)
         batch = self.memory.Transition(*zip(*transitions))
         fields = self.memory.Transition._fields
-        return tuple([torch.cat(getattr(batch, field)) for field in fields])
+        return tuple([torch.cat(getattr(batch, field)).to(self.device) for field in fields])
     
         #states: [ [[0 1 0 0], ... , [0 0 1 0]], ..., [[0 1 0 0], ... , [0 0 1 0]] ]
         #actions: [[1], [5], ...]
         #nexts: [ [[0 1 0 0], ... , [0 0 1 0]], ..., [[0 1 0 0], ... , [0 0 1 0]] ]
         #rewards: [25, -4, ...]
+    
+class Action:
+    def __init__(self, block, color):
+        self.block = block
+        self.color = color
+        self.id = None
+        self.invalid = 0  # 0 means false 1 means true
+        self.winner = False
+        self.times = {"Exploration": 0, "Exploitation": 0, "Simulation": 0}
+
+    def set_invalid(self):
+        self.invalid = int(not self.block.is_uncolored())
+
+    def increment(self, phase):
+        self.times[phase] += 1
+
+    def __eq__(self, other):
+        return isinstance(other, Action) and self.block == other.block
+    
+    def __ne__(self, other):
+        return not self.__eq__(other)

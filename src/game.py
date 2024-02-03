@@ -4,14 +4,13 @@ import numpy as np
 import sys
 import torch
 import time
-import os
 #from grid import *
 #from player import *
 #from colors import *
 #from utils import *
 
 class Game:
-    def __init__(self, title, repeats, env, human, robot, epsilon, accuracy, saves, dir):
+    def __init__(self, title, repeats, env, human, robot, epsilon, cutoff, accuracy, saves, dir):
         self.title = title
         self.repeats = repeats
         self.env = env
@@ -19,21 +18,15 @@ class Game:
         self.robot = robot
         self.epsilon = epsilon
         self.acc = accuracy
-        self.saves = saves
         self.dir = dir
-        self.explore = int(0.98 * repeats)
+        self.explore = int(cutoff * repeats)
         self.decay = round(1/self.explore, accuracy)
-        self.freq = round(repeats/saves)
+        self.freq = repeats//saves
         self.losses = {'human': [], 'robot': []}
 
     @property
     def players(self):
         return [self.human, self.robot]
-    
-    @property
-    def info(self):
-        Info = namedtuple('Info', ['state', 'space'])
-        return Info(self.env.state, self.env.space)
     
     @property
     def actions(self):
@@ -55,8 +48,8 @@ class Game:
         #self.print_state()
         #######################
 
-        self.human.load(self.info)
-        self.robot.load(self.info)
+        for player in self.players:
+            player.load(data=self.env.state)
 
         ####################
         #self.print_actions()
@@ -75,29 +68,33 @@ class Game:
                 ##################
 
                 for player in self.players:
+                    player.update(type="current", data=self.env.state)
                     if np.random.rand() < self.epsilon:
                         player.explore()
 
                         ###########################################################################
-                        #print(player.type, ":", (player.action.block.id, player.action.color.name))
+                        #print(player.type, ":", (player.action.block.id, player.action.color.name, player.action.times))
                         ###########################################################################
 
                     else:
                         player.exploit()
 
                         ###########################################################################
-                        #print(player.type, ":", (player.action.block.id, player.action.color.name))
+                        #print(player.type, ":", (player.action.block.id, player.action.color.name, player.action.times))
                         ###########################################################################
+
+                human_block_color = self.env.state[self.human.action.block.id].color.name
+                robot_block_color = self.env.state[self.robot.action.block.id].color.name
 
                 self.env.apply(self.actions)
 
                 for player in self.players:
-                    player.update(self.info, type="next")
+                    player.update(type="next", data=self.env.state)
                     self.env.reward(player)
                     player.expand_memory()
-                    player.update(self.info, type="current")
+                    player.update(type="current", data=self.env.state)
                     player.optimize()
-                    player.update(self.info, type="net")
+                    player.update(type="net")
 
                 steps += 1
                 self.display_status(repeat, steps, delay=0)
@@ -106,13 +103,19 @@ class Game:
                 player = getattr(self, type)
                 self.save_model(player, repeat) if repeat % self.freq == 0 else None
                 self.losses[type].append(player.L / steps)
+
             self.epsilon = max(round(self.epsilon - self.decay, self.acc), 0)
 
         self.graph_losses()
+        self.graph_statistics(phase="Exploitation", steps=steps)
+
+        # TODO later:
+        # for player in self.players
+        #    self.statistics[player] = player.statistics(phase="Simulation")
 
         self.print_state()
-        print(self.human.action.applied, self.human.action.block.id, self.human.action.block.color.name, self.human.action.color.name)
-        print(self.robot.action.applied, self.robot.action.block.id, self.robot.action.block.color.name, self.robot.action.color.name)
+        print(self.human.action.winner, self.human.action.block.id, human_block_color, self.human.action.color.name)
+        print(self.robot.action.winner, self.robot.action.block.id, robot_block_color, self.robot.action.color.name)
                 
     def stage_over(self):
         for block in self.env.state:
@@ -121,24 +124,39 @@ class Game:
         return True
     
     def save_model(self, player, repeat):
-        save_dir = os.path.join(self.dir, "models", f"repeat_{repeat}")
-        os.makedirs(save_dir, exist_ok=True)
-        path = os.path.join(save_dir, f"{player.type}.pth")
+        path = get_path(dir=self.dir, folder=("models", f"repeat_{repeat}"), name=f"{player.type}.pth")
         torch.save(player.policy_net.state_dict(), path)
     
     def graph_losses(self):
+        yh = self.losses['human']
+        yr = self.losses['robot']
         plt.figure(figsize=(10, 6))
-        plt.plot(self.losses['human'], label='Human Loss', color='red')
-        plt.plot(self.losses['robot'], label='Robot Loss', color='blue')
+        plt.plot(yh, label='Human', color='red')
+        plt.plot(yr, label='Robot', color='blue')
         plt.title('Training Losses')
         plt.xlabel('Steps')
         plt.ylabel('Loss')
         plt.legend()
         plt.grid(True)
-        save_dir = os.path.join(self.dir, 'static')
-        os.makedirs(save_dir, exist_ok=True)
-        path = os.path.join(save_dir, 'losses.png')
+        path = get_path(dir=self.dir, folder='static', name='losses.png')
         plt.savefig(path)
+        plt.close()
+    
+    def graph_statistics(self, phase, steps, width=0.4):
+        x = list(range(len(self.human.space)))
+        yh = [action.times[phase]/steps for action in self.human.space]
+        yr = [action.times[phase]/steps for action in self.robot.space]
+        plt.figure(figsize=(12, 6))
+        plt.bar(x, yh, color='red', width=width, label='Human')
+        plt.bar([id + width for id in x], yr, color='blue', width=width, label='Robot')
+        plt.title(f'{phase} Statistics')
+        plt.xlabel('Action')
+        plt.ylabel('Frequency')
+        plt.legend()
+        plt.grid(True)
+        path = get_path(dir=self.dir, folder='static', name=f'{phase.lower()}_statistics.png')
+        plt.savefig(path)
+        plt.close()
     
     def display_status(self, repeat, steps, delay=0):
         f = '\rRepeat: {}, Steps: {} | Loss: (h={:.3f}, r={:.3f})'
