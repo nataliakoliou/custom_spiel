@@ -1,7 +1,7 @@
 import random
 from itertools import product, chain
-#from colors import *
-#from utils import *
+from colors import *
+from utils import *
 
 class Grid:
     def __init__(self, rows, cols, merge, minR, wR):
@@ -79,18 +79,6 @@ class Grid:
                     _loser = True  # sets the next action to "loser"
                 else:
                     action.winner = False
-
-            """ # EQUIVALENT!!!
-            if distinct:
-                self.state[action.block.id].set_color(action.color)
-                action.winner = True
-                _loser = True
-            elif _loser:
-                action.winner = False
-            else:
-                self.state[action.block.id].set_color(action.color)
-                action.winner = True
-                _loser = True """
                     
     def reward(self, player):
         k, m = 0, 0
@@ -101,10 +89,6 @@ class Grid:
         g = k * player.gain
         p = m * player.penalty
         player.reward = s + g + p if player.action.winner else 0
-
-        ###########################################################################################################
-        #print(player.reward, bool(player.action.invalid), player.action.color.name, player.action.block.color.name)
-        ###########################################################################################################
 
 class Cell:
     def __init__(self, row, col):

@@ -5,8 +5,8 @@ from itertools import product
 from copy import deepcopy
 import torch.optim as optim
 from collections import namedtuple, deque
-#from model import *
-#from utils import *
+from model import *
+from utils import *
 
 class ReplayMemory(object):
     def __init__(self, capacity):
@@ -98,12 +98,6 @@ class Player:
         self.action = self.space[id]
         self.action.increment("Exploitation")
 
-        # tensor([[0.2333, 0.2827]]).max(1) returns:
-        # torch.return_types.max(
-        # values=tensor([0.2827]),
-        # indices=tensor([1])
-        # )
-
     def expand_memory(self):
         s = torch.tensor([[block.color.encoding for block in self.state]], dtype=torch.float32).to(self.device)  # [ [[0 1 0 0], ... , [0 0 1 0]] ]
         a = torch.tensor([[self.action.id]]).to(self.device)  # [[1]]
@@ -115,6 +109,7 @@ class Player:
         if len(self.memory) < self.batch_size:
             return
         states, actions, nexts, rewards = self.get_batch()
+        print(states.shape)
         self.qvalues = self.policy_net(states).gather(1, actions)  # tensor([[4.3001], [4.1578], ... ])
         with torch.no_grad():
             target = rewards + self.gamma * self.target_net(nexts).max(1).values  # tensor([4.3001, 4.1578, ... ])
@@ -130,11 +125,6 @@ class Player:
         batch = self.memory.Transition(*zip(*transitions))
         fields = self.memory.Transition._fields
         return tuple([torch.cat(getattr(batch, field)).to(self.device) for field in fields])
-    
-        #states: [ [[0 1 0 0], ... , [0 0 1 0]], ..., [[0 1 0 0], ... , [0 0 1 0]] ]
-        #actions: [[1], [5], ...]
-        #nexts: [ [[0 1 0 0], ... , [0 0 1 0]], ..., [[0 1 0 0], ... , [0 0 1 0]] ]
-        #rewards: [25, -4, ...]
     
 class Action:
     def __init__(self, block, color):
