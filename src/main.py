@@ -11,9 +11,9 @@
 from google.colab import drive
 import torch
 import torch.nn as nn
-from game import *
-from grid import *
-from player import *
+#from game import *
+#from grid import *
+#from player import *
 #from meta import *
 
 drive.mount('/content/drive')
@@ -74,7 +74,7 @@ game = Game(
     )
 
 game.qlearning()
-game.simulate()
+#game.simulate()
 
 """metagame = Metagame(
     payoffs = [v.game.payoff for v in versions],

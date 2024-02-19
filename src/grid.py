@@ -1,7 +1,7 @@
 import random
 from itertools import product, chain
-from colors import *
-from utils import *
+#from colors import *
+#from utils import *
 
 class Grid:
     def __init__(self, rows, cols, merge, minR, wR):

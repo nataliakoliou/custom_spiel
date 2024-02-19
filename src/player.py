@@ -5,8 +5,8 @@ from itertools import product
 from copy import deepcopy
 import torch.optim as optim
 from collections import namedtuple, deque
-from model import *
-from utils import *
+#from model import *
+#from utils import *
 
 class ReplayMemory(object):
     def __init__(self, capacity):
@@ -109,7 +109,6 @@ class Player:
         if len(self.memory) < self.batch_size:
             return
         states, actions, nexts, rewards = self.get_batch()
-        print(states.shape)
         self.qvalues = self.policy_net(states).gather(1, actions)  # tensor([[4.3001], [4.1578], ... ])
         with torch.no_grad():
             target = rewards + self.gamma * self.target_net(nexts).max(1).values  # tensor([4.3001, 4.1578, ... ])

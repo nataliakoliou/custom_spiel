@@ -4,10 +4,10 @@ import numpy as np
 import sys
 import torch
 import time
-from grid import *
-from player import *
-from colors import *
-from utils import *
+#from grid import *
+#from player import *
+#from colors import *
+#from utils import *
 
 class Game:
     def __init__(self, title, repeats, env, human, robot, epsilon, cutoff, accuracy, saves, dir):
@@ -75,7 +75,7 @@ class Game:
         return True
     
     def save_model(self, player, repeat):
-        path = get_path(dir=self.dir, folder="models", name=f"{player.type}.pth")  , f"R{repeat}")
+        path = get_path(dir=self.dir, folder=("models", f"repeat_{repeat}"), name=f"{player.type}.pth")
         torch.save(player.policy_net.state_dict(), path)
     
     def graph_losses(self):
