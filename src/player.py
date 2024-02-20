@@ -131,7 +131,6 @@ class Action:
         self.color = color
         self.id = None
         self.invalid = 0  # 0 means false 1 means true
-        self.winner = False
         self.times = {"Exploration": 0, "Exploitation": 0, "Simulation": 0}
 
     def set_invalid(self):

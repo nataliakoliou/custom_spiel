@@ -28,7 +28,7 @@ env = Grid(
     wR=0.2
     )
 
-human = Player(
+"""human = Player(
     type="human",
     model="DQN",
     criterion = nn.SmoothL1Loss(),
@@ -42,13 +42,13 @@ human = Player(
     penalty=-2,
     sanction=-10,
     device=device
-    )
+    )"""
 
 robot = Player(
     type="robot",
     model="DQN",
-    criterion = nn.MSELoss(),
-    optimizer="SGD",
+    criterion = nn.SmoothL1Loss(),
+    optimizer="AdamW",
     lr=0.001,
     tau=0.005,
     batch_size=128,
@@ -60,21 +60,19 @@ robot = Player(
     device=device
     )
 
-game = Game(
-    title="CGCP.1: Human-Robot",
-    repeats=1000,
+qlearning = QLearner(
+    repeats=500,
     env=env,
-    human=human,
-    robot=robot,
+    player=robot,
     epsilon=1,
     cutoff=0.9,
     accuracy=4,
     saves=5,
+    color="blue".
     dir='/content/drive/MyDrive/Repositories/custom_spiel'
     )
 
-game.qlearning()
-#game.simulate()
+qlearning.run()
 
 """metagame = Metagame(
     payoffs = [v.game.payoff for v in versions],

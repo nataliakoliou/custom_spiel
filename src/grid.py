@@ -64,21 +64,10 @@ class Grid:
         for block in random.sample(hidden_blocks, r):
             block.set_color(NC)
     
-    def apply(self, actions):
-        distinct = actions.former != actions.latter
-        actions_list = list(actions)
-        random.shuffle(actions_list)
-        _loser = False
-        for action in actions_list:
-            action.set_invalid()
-            action.winner = True
-            if not bool(action.invalid):
-                if distinct or not _loser:
-                    self.state[action.block.id].set_color(action.color)
-                    action.winner = True
-                    _loser = True  # sets the next action to "loser"
-                else:
-                    action.winner = False
+    def apply(self, action):
+        action.set_invalid()
+        if not bool(action.invalid):
+            self.state[action.block.id].set_color(action.color)
                     
     def reward(self, player):
         k, m = 0, 0
@@ -88,7 +77,7 @@ class Grid:
         s = player.action.invalid * player.sanction
         g = k * player.gain
         p = m * player.penalty
-        player.reward = s + g + p if player.action.winner else 0
+        player.reward = s + g + p
 
 class Cell:
     def __init__(self, row, col):
