@@ -23,3 +23,11 @@ def get_path(dir, folder, name):
     save_dir = os.path.join(dir, *folder)
     os.makedirs(save_dir, exist_ok=True)
     return os.path.join(save_dir, name)
+
+def get_color(type):
+    if type == "robot":
+        return "blue"
+    elif type == "human":
+        return "red"
+    else:
+        raise ValueError("Invalid type.")

@@ -8,19 +8,26 @@ import time
 #from player import *
 #from colors import *
 #from utils import *
+#from settings import *
 
-class QLearner:
-    def __init__(self, repeats, env, player, epsilon, cutoff, accuracy, saves, color, dir):
+class Simulator:
+    def __init__(self, repeats, env, human, robot, colors):
         self.repeats = repeats
         self.env = env
+        self.human = human
+        self.robot = robot
+        self.colors = colors
+
+class QLearner:
+    def __init__(self, name, env, player, repeats, epsilon, cutoff):
+        self.name = name
+        self.env = env
         self.player = player
+        self.repeats = repeats
         self.epsilon = epsilon
-        self.acc = accuracy
-        self.dir = dir
         self.explore = int(cutoff * repeats)
-        self.decay = round(1/self.explore, accuracy)
-        self.color = color
-        self.freq = repeats//saves
+        self.decay = round(1/self.explore, ACCURACY)
+        self.color = get_color(player.type)
         self.loss = []
         self.steps = 0
 
@@ -50,9 +57,9 @@ class QLearner:
                 self.player.update(type="net")
                 self.steps += 1
                 self.display_status(repeat, delay=0)
-            self.save_model(repeat) if repeat % self.freq == 0 else None
             self.loss.append(self.player.L / self.steps)
             self.epsilon = max(round(self.epsilon - self.decay, self.acc), 0)
+        self.save_model()
         self.graph_loss()
         self.graph_statistics(phase="Exploitation")
        
@@ -67,8 +74,8 @@ class QLearner:
                 return False
         return True
     
-    def save_model(self,repeat):
-        path = get_path(dir=self.dir, folder=("models", f"repeat_{repeat}"), name=f"{self.player.type}.pth")
+    def save_model(self):
+        path = get_path(dir=DIR, folder=("models", f"{self.player.type}"), name=f"{self.name}.pth")
         torch.save(self.player.policy_net.state_dict(), path)
     
     def graph_loss(self):
@@ -79,7 +86,7 @@ class QLearner:
         plt.ylabel('Loss')
         plt.legend()
         plt.grid(True)
-        path = get_path(dir=self.dir, folder='static', name='loss.png')
+        path = get_path(dir=DIR, folder='static', name='loss.png')
         plt.savefig(path)
         plt.close()
     
@@ -95,7 +102,7 @@ class QLearner:
         plt.xticks([i + width/2 for i in x], x_labels, rotation=45, ha="right")
         plt.legend()
         plt.grid(True)
-        path = get_path(dir=self.dir, folder='static', name=f'{phase.lower()}_statistics.png')
+        path = get_path(dir=DIR, folder='static', name=f'{phase.lower()}_statistics.png')
         plt.savefig(path)
         plt.close()
     
