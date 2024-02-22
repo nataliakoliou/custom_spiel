@@ -58,7 +58,7 @@ class QLearner:
                 self.steps += 1
                 self.display_status(repeat, delay=0)
             self.loss.append(self.player.L / self.steps)
-            self.epsilon = max(round(self.epsilon - self.decay, self.acc), 0)
+            self.epsilon = max(round(self.epsilon - self.decay, ACCURACY), 0)
         self.save_model()
         self.graph_loss()
         self.graph_statistics(phase="Exploitation")
