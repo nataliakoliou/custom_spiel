@@ -4,7 +4,7 @@ from itertools import product, chain
 #from utils import *
 
 class Grid:
-    def __init__(self, rows, cols, merge, minR, wR):
+    def __init__(self, rows, cols, merge, minR=2, wR=0.2):
         self.rows = rows
         self.cols = cols
         self.merge = merge

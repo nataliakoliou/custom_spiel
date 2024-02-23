@@ -1,4 +1,4 @@
-from torch.nn import SmoothL1Loss
+from torch.nn import SmoothL1Loss, MSELoss, L1Loss
 from collections import namedtuple
 
 DIR = '/content/drive/MyDrive/Repositories/custom_spiel'
@@ -6,7 +6,7 @@ ACCURACY = 4
 
 def TUPLE(type): return namedtuple(type, ["h", "r"])
 
-AGENTS = [("small", "human", "dump", "sd"), ("average", "robot", "genius", "ag")]
+AGENTS = [("big", "human", "dump", "bd"), ("big", "robot", "genius", "bg")]
 
 #TODO: FIX ERROR
 """PAIRS = [("huge", TUPLE("type")("human", "robot"), TUPLE("intels")("dump", "genius"), "hdg"),
@@ -24,18 +24,17 @@ ENVIRONMENT = {
 
 def PLAYER(type=None):
     return {
-        "dump": {"type": type, "model": "DQN", "criterion": SmoothL1Loss(), "optimizer": "Adam", "lr": 0.0001, "tau": 0.005, "batch_size": 64, "gamma": 0, "weight_decay": 1e-5, "gain": +1, "penalty": -2, "sanction": -10},
-        "basic": {"type": type, "model": "DQN", "criterion": SmoothL1Loss(), "optimizer": "AdamW", "lr": 0.001, "tau": 0.005, "batch_size": 128, "gamma": 0, "weight_decay": 1e-5, "gain": +1, "penalty": -2, "sanction": -10},
-        "moderate": {"type": type, "model": "DQN", "criterion": SmoothL1Loss(), "optimizer": "AdamW", "lr": 0.001, "tau": 0.005, "batch_size": 128, "gamma": 0, "weight_decay": 1e-5, "gain": +1, "penalty": -2, "sanction": -10},
-        "advanced": {"type": type, "model": "DQN", "criterion": SmoothL1Loss(), "optimizer": "AdamW", "lr": 0.001, "tau": 0.005, "batch_size": 128, "gamma": 0, "weight_decay": 1e-5, "gain": +1, "penalty": -2, "sanction": -10},
-        "smart": {"type": type, "model": "DQN", "criterion": SmoothL1Loss(), "optimizer": "AdamW", "lr": 0.001, "tau": 0.005, "batch_size": 128, "gamma": 0, "weight_decay": 1e-5, "gain": +1, "penalty": -2, "sanction": -10},
-        "wise": {"type": type, "model": "DQN", "criterion": SmoothL1Loss(), "optimizer": "AdamW", "lr": 0.001, "tau": 0.005, "batch_size": 128, "gamma": 0, "weight_decay": 1e-5, "gain": +1, "penalty": -2, "sanction": -10},
-        "genius": {"type": type, "model": "DQN", "criterion": SmoothL1Loss(), "optimizer": "AdamW", "lr": 0.001, "tau": 0.005, "batch_size": 128, "gamma": 0, "weight_decay": 1e-5, "gain": +1, "penalty": -2, "sanction": -10}
+        "dump": {"type": type, "model": "LDQN", "criterion": MSELoss(), "optimizer": "SGD", "lr": 5e-3, "tau": 5e-1, "batch_size": 8, "gamma": 0, "weight_decay": 5e-3, "gain": +1, "penalty": -2, "sanction": -10},
+        "naive": {"type": type, "model": "LDQN", "criterion": L1Loss(), "optimizer": "Adagrad", "lr": 4e-3, "tau": 1e-1, "batch_size": 16, "gamma": 0, "weight_decay": 1e-3, "gain": +1, "penalty": -2, "sanction": -10},
+        "decent": {"type": type, "model": "MDQN", "criterion": SmoothL1Loss(beta=0.2), "optimizer": "Adadelta", "lr": 3e-3, "tau": 5e-2, "batch_size": 32, "gamma": 0, "weight_decay": 5e-4, "gain": +1, "penalty": -2, "sanction": -10},
+        "smart": {"type": type, "model": "MDQN", "criterion": SmoothL1Loss(beta=0.5), "optimizer": "RMSprop", "lr": 2e-3, "tau": 1e-2, "batch_size": 64, "gamma": 0, "weight_decay": 1e-4, "gain": +1, "penalty": -2, "sanction": -10},
+        "wise": {"type": type, "model": "HDQN", "criterion": SmoothL1Loss(beta=0.8), "optimizer": "Adam", "lr": 1e-3, "tau": 5e-3, "batch_size": 128, "gamma": 0, "weight_decay": 5e-5, "gain": +1, "penalty": -2, "sanction": -10},
+        "genius": {"type": type, "model": "HDQN", "criterion": SmoothL1Loss(beta=1.0), "optimizer": "AdamW", "lr": 8e-4, "tau": 1e-3, "batch_size": 256, "gamma": 0, "weight_decay": 1e-5, "gain": +1, "penalty": -2, "sanction": -10}
         }
 
 def LEARNER(env=None, player=None):
     return {
-        "sd": {"name": "sd", "env": env, "player": player, "repeats": 100, "epsilon": 1, "cutoff": 0.9},
-        "ag": {"name": "ag", "env": env, "player": player, "repeats": 500, "epsilon": 1, "cutoff": 0.9},
+        "bd": {"name": "bd", "env": env, "player": player, "repeats": 100, "epsilon": 1, "cutoff": 0.9},
+        "bg": {"name": "bg", "env": env, "player": player, "repeats": 500, "epsilon": 1, "cutoff": 0.9},
         # add more ....
         }

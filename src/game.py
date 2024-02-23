@@ -86,7 +86,7 @@ class QLearner:
         plt.ylabel('Loss')
         plt.legend()
         plt.grid(True)
-        path = get_path(dir=DIR, folder='static', name='loss.png')
+        path = get_path(dir=DIR, folder=("static", f"{self.player.type}"), name=f"{self.name}_loss.png")
         plt.savefig(path)
         plt.close()
     
@@ -102,7 +102,7 @@ class QLearner:
         plt.xticks([i + width/2 for i in x], x_labels, rotation=45, ha="right")
         plt.legend()
         plt.grid(True)
-        path = get_path(dir=DIR, folder='static', name=f'{phase.lower()}_statistics.png')
+        path = get_path(dir=DIR, folder=("static", f"{self.player.type}"), name=f"{self.name}_{phase.lower()}_stats.png")
         plt.savefig(path)
         plt.close()
     

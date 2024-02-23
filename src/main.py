@@ -1,8 +1,9 @@
 #################### TODO ####################
+#  Implement def counter for restrictions not satisfied
+#  Make grid.py general again for both single agents as well as pairs of agents
 #  Get statistics for type/action combination
-#  Simulation
-#  Show colored grid during simulation
-#  Do simulation from trained models
+#  Simulation from trained models
+#  Show colored grid during simulation (parameter on/off)
 ##############################################
 
 from google.colab import drive
